@@ -292,7 +292,7 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;backgrou
   function $(id){return document.getElementById(id)}
   function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
   function stars(n){return n+' ★'}
-  var state={reviews:[],isSample:true,truncated:false,running:false,live:null,ctl:null};
+  var state={reviews:[],isSample:true,truncated:false,running:false,live:null,ctl:null,noLive:false};
   var sampleFn=null;
 
   function setReviews(list,isSample,truncated){
@@ -397,7 +397,7 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;backgrou
     var box=$('results'),sub=$('res-sub');
     var agg,B,label;
     if(state.live){agg=state.live.agg;B=state.live.B;label='نتيجة مباشرة من الوكيل · '+state.live.time}
-    else if(state.isSample){agg=aggregate(state.reviews,savedLabels());B=SAVED_B;label='نتيجة محفوظة على العينة. اضغط «شغّل المستشار» لتحليل مباشر.'}
+    else if(state.isSample){agg=aggregate(state.reviews,savedLabels());B=SAVED_B;label=state.noLive?'نتيجة محفوظة على العينة.':'نتيجة محفوظة على العينة. اضغط «شغّل المستشار» لتحليل مباشر.'}
     else{sub.textContent='';box.innerHTML='<div class="empty">اضغطوا «شغّل المستشار» لتحليل التقييمات التي رفعتموها. ستظهر هنا النتائج بحسب الموسم.</div>';return}
     sub.textContent=label;
     var h='<div style="display:flex;flex-direction:column;gap:22px">';
@@ -510,10 +510,10 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;backgrou
     if(window.claude&&window.claude.use){
       window.claude.use('sample').then(function(s){
         sampleFn=s;
-        if(!s){$('run').hidden=true;$('run-hint').textContent='التشغيل المباشر غير متاح في هذا العرض. النتيجة المعروضة محفوظة على العينة.'}
-      }).catch(function(){$('run').hidden=true});
-    }else{$('run').hidden=true;$('run-hint').textContent='التشغيل المباشر غير متاح في هذا العرض. النتيجة المعروضة محفوظة على العينة.'}
-  }catch(e){$('run').hidden=true}
+        if(!s){state.noLive=true;drawResults();$('run').hidden=true;$('run-hint').textContent='التشغيل المباشر غير متاح في هذا العرض. النتيجة المعروضة محفوظة على العينة.'}
+      }).catch(function(){state.noLive=true;drawResults();$('run').hidden=true});
+    }else{state.noLive=true;drawResults();$('run').hidden=true;$('run-hint').textContent='التشغيل المباشر غير متاح في هذا العرض. النتيجة المعروضة محفوظة على العينة.'}
+  }catch(e){state.noLive=true;drawResults();$('run').hidden=true}
 })();
 </script>
 </body>
