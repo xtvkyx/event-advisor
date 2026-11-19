@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>مستشار بوليفارد وورلد</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Readex+Pro:wght@500;600&display=swap">
+<style>
+/* Layout: one working tool. Header → data in → collection criteria → run the agent → results by season. */
+:root{
+  --bg:#F2F5F7; --surface:#FFFFFF; --ink:#13202B; --muted:#586977; --line:#D9E0E6;
+  --accent:#0F5C6E; --accent-bg:#DCEEF2;
+  --signal:#B8432A; --signal-bg:#FBE9E4;
+  --warn:#8A5A00; --warn-bg:#FBF0D6;
+  --good:#1F6B4A; --good-bg:#DDF1E6;
+  --font-body:"IBM Plex Sans Arabic","Segoe UI",Tahoma,sans-serif;
+  --font-head:"Readex Pro","IBM Plex Sans Arabic","Segoe UI",Tahoma,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0D151C; --surface:#15212A; --ink:#E7EDF1; --muted:#93A5B2; --line:#26353F;
+  --accent:#6CCBDD; --accent-bg:#12323A;
+  --signal:#FF9A82; --signal-bg:#3A2018;
+  --warn:#EBC070; --warn-bg:#35290F;
+  --good:#6FD0A0; --good-bg:#123325; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0D151C; --surface:#15212A; --ink:#E7EDF1; --muted:#93A5B2; --line:#26353F;
+  --accent:#6CCBDD; --accent-bg:#12323A;
+  --signal:#FF9A82; --signal-bg:#3A2018;
+  --warn:#EBC070; --warn-bg:#35290F;
+  --good:#6FD0A0; --good-bg:#123325; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.7;direction:rtl;font-variant-numeric:tabular-nums;
+  padding-block:28px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1040px;margin:0 auto;display:flex;flex-direction:column;gap:34px}
+h1,h2,h3{font-family:var(--font-head);margin:0;font-weight:600;text-wrap:balance}
+h1{font-size:30px;line-height:1.3}
+h2{font-size:19px}
+h3{font-size:15.5px}
+p{margin:0}
+.muted{color:var(--muted)}
+.sec{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sec-head{display:flex;flex-direction:column;gap:2px}
+.sec-head p{color:var(--muted);font-size:13.5px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px 18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.pill{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12.5px;font-weight:500;white-space:nowrap}
+.pill.signal{color:var(--signal);background:var(--signal-bg)}
+.pill.accent{color:var(--accent);background:var(--accent-bg)}
+.pill.good{color:var(--good);background:var(--good-bg)}
+.pill.warn{color:var(--warn);background:var(--warn-bg)}
+
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+.top .meta{display:flex;flex-direction:column;gap:6px;min-width:0}
+.eyebrow{font-size:12.5px;color:var(--muted)}
+
+/* data */
+.bar-row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.btns{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+button,.filebtn{font:inherit;font-size:14px;font-weight:500;border-radius:8px;padding:8px 16px;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+button:disabled{opacity:.5;cursor:default}
+button:focus-visible,.filebtn:focus-within{outline:2px solid var(--ink);outline-offset:2px}
+.filebtn input{position:absolute;opacity:0;width:1px;height:1px}
+.filebtn{position:relative;display:inline-block}
+.tbl{max-height:250px;overflow:auto;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{text-align:start;padding:7px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{position:sticky;top:0;background:var(--bg);color:var(--muted);font-weight:500;font-size:12.5px}
+tr:last-child td{border-bottom:0}
+td.n{white-space:nowrap}
+.hint{font-size:13px;color:var(--muted)}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;background:var(--bg);padding:1px 6px;border-radius:4px;direction:ltr;display:inline-block}
+
+/* criteria */
+.crit{display:grid;grid-template-columns:repeat(2,1fr);gap:0 28px}
+.crit div{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);min-width:0}
+.crit dt{color:var(--muted);min-width:84px;font-size:13.5px}
+.crit dd{margin:0;font-size:14px;min-width:0}
+
+/* run */
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.step{display:grid;grid-template-columns:22px 1fr;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+.step:last-child{border-bottom:0}
+.dot{width:18px;height:18px;border-radius:50%;border:2px solid var(--line);margin-top:3px;display:grid;place-items:center;font-size:11px;line-height:1;color:var(--bg)}
+.step.done .dot{background:var(--good);border-color:var(--good)}
+.step.err .dot{background:var(--signal);border-color:var(--signal)}
+.step.run .dot{border-color:var(--accent);border-top-color:transparent;animation:spin .8s linear infinite}
+.step.wait{opacity:.5}
+.step .r{color:var(--muted);font-size:13.5px}
+.step.err .r{color:var(--signal)}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* results */
+.seasons{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.season{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:2px}
+.season b{font-family:var(--font-head);font-size:22px;font-weight:600}
+.season .avg{font-size:26px;font-family:var(--font-head);font-weight:600;line-height:1.3}
+.season .avg small{font-size:13px;color:var(--muted);font-weight:500}
+.meter{height:6px;background:var(--bg);border-radius:3px;overflow:hidden;margin-top:6px}
+.meter i{display:block;height:100%;background:var(--accent)}
+.mxw{overflow-x:auto}
+.mx{min-width:480px;display:flex;flex-direction:column}
+.mx-r{display:grid;grid-template-columns:1.5fr repeat(var(--n),1fr);gap:14px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+.mx-r:last-child{border-bottom:0}
+.mx-h{font-size:12.5px;color:var(--muted);padding-top:0}
+.mx-t{font-weight:500}
+.mx-c{display:flex;flex-direction:column;gap:4px}
+.mx-c small{color:var(--muted)}
+.mx-c.dim{color:var(--muted)}
+.stack{display:flex;height:6px;border-radius:3px;overflow:hidden;background:var(--bg);width:100%}
+.stack i{display:block}
+.stack .pos{background:var(--good)}
+.stack .mix{background:var(--warn)}
+.stack .neg{background:var(--signal)}
+.legend{display:flex;gap:14px;font-size:12.5px;color:var(--muted);flex-wrap:wrap}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-inline-end:6px;vertical-align:-1px}
+.legend .l1::before{background:var(--good)}
+.legend .l2::before{background:var(--warn)}
+.legend .l3::before{background:var(--signal)}
+.list{display:flex;flex-direction:column}
+.item{padding:10px 0;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:2px}
+.item:last-child{border-bottom:0}
+.item .why{color:var(--muted);font-size:13.5px}
+.recs{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.rec{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px 18px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.rec .why{color:var(--muted);font-size:13.5px}
+.rec .kpi-t{font-size:13px;color:var(--accent);font-weight:500}
+.empty{padding:26px 18px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:8px}
+.note{font-size:13px;color:var(--muted)}
+.foot{font-size:12.5px;color:var(--muted);text-align:center}
+
+@media (max-width:760px){
+  .crit{grid-template-columns:1fr}
+  .recs{grid-template-columns:1fr}
+}
+@media (max-width:520px){h1{font-size:25px}
+  .mx{min-width:0}
+  .mx-r{grid-template-columns:1.1fr repeat(var(--n),1fr);gap:8px}
+  .mx-t{font-size:13px;line-height:1.5}
+  .mx-c small{display:none}}
+@media (prefers-reduced-motion:reduce){.step.run .dot{animation:none}}
+</style>
+</head>
+<body>
+<div class="wrap" dir="rtl" lang="ar">
+
+  <header class="top">
+    <div class="meta">
+      <span class="eyebrow">نموذج أولي · فريق beyond limits · تحدي «تحويل الفعالية إلى محتوى مستمر»</span>
+      <h1>مستشار بوليفارد وورلد</h1>
+      <p class="muted">وكيل ذكي يقرأ تقييمات الزوار لكل موسم، ويقارن بين المواسم، ويكتب للمنظم ما يغيّره في الموسم القادم.</p>
+    </div>
+    <span class="pill warn" id="mode-chip">عينة تجريبية مولّدة</span>
+  </header>
+
+  <section class="sec" aria-labelledby="h-data">
+    <div class="sec-head">
+      <h2 id="h-data">البيانات</h2>
+      <p>مصدر واحد للبداية: تقييمات الزوار. كل سطر فيه الموسم والنجوم والنص.</p>
+    </div>
+    <div class="panel">
+      <div class="bar-row">
+        <span id="data-sum" class="muted"></span>
+        <div class="btns">
+          <label class="filebtn" id="file-lbl">رفع ملف CSV<input id="file" type="file" accept=".csv,.tsv,.txt,text/csv,text/plain"></label>
+          <button type="button" id="restore">استخدم العينة التجريبية</button>
+        </div>
+      </div>
+      <div class="tbl"><table><thead><tr><th>الموسم</th><th>النجوم</th><th>النص</th></tr></thead><tbody id="rows"></tbody></table></div>
+      <p class="hint" id="data-note"></p>
+      <p class="hint">شكل الملف: <code>season,rating,text</code> والسطر الأول عناوين. لا تضعوا أسماء الأشخاص.</p>
+    </div>
+  </section>
+
+  <section class="sec" aria-labelledby="h-crit">
+    <div class="sec-head">
+      <h2 id="h-crit">معايير جمع البيانات</h2>
+      <p>كيف يعرف الوكيل أن التقييم يخص هذه الفعالية، وماذا يُحفظ.</p>
+    </div>
+    <div class="panel">
+      <dl class="crit" style="margin:0">
+        <div><dt>الفعالية</dt><dd>بوليفارد وورلد (Boulevard World)</dd></div>
+        <div><dt>المصدر</dt><dd>تقييمات Google Maps عبر الـAPI، ومنشورات السوشيال ميديا إن توفرت</dd></div>
+        <div><dt>كلمات البحث</dt><dd>بوليفارد وورلد · Boulevard World · BLVD World، مع الهاشتاقات الرسمية بعد التأكد منها</dd></div>
+        <div><dt>التقسيم</dt><dd>حسب موسم كل تقييم (تاريخ النشر)</dd></div>
+        <div><dt>اللغة</dt><dd>عربي وإنجليزي</dd></div>
+        <div><dt>ما يُحفظ</dt><dd>النص والتاريخ والنجوم فقط، بدون أسماء أو حسابات</dd></div>
+        <div><dt>قبل الاعتماد</dt><dd>مراجعة شروط كل منصة وحدود الـAPI وعدد التقييمات المتاحة لكل موسم</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="sec" aria-labelledby="h-run">
+    <div class="sec-head">
+      <h2 id="h-run">تشغيل المستشار</h2>
+      <p>الوكيل يعمل على ثلاث خطوات، وكل خطوة نتيجتها تغذّي التي بعدها.</p>
+    </div>
+    <div class="panel">
+      <div class="bar-row">
+        <div class="btns">
+          <button type="button" class="primary" id="run">شغّل المستشار</button>
+          <button type="button" id="stop" hidden>إيقاف</button>
+        </div>
+        <span class="hint" id="run-hint">أول تشغيل يطلب إذنك لاستخدام Claude، ويُحسب من استخدام حسابك.</span>
+      </div>
+      <ol class="steps" id="steps" aria-live="polite"></ol>
+    </div>
+  </section>
+
+  <section class="sec" aria-labelledby="h-res">
+    <div class="sec-head">
+      <h2 id="h-res">النتائج</h2>
+      <p id="res-sub"></p>
+    </div>
+    <div id="results"></div>
+  </section>
+
+  <p class="foot">العينة التجريبية تقييمات كتبناها لتجربة الأداة، ولا تعبّر عن آراء زوار حقيقيين ولا عن بوليفارد وورلد. ضعوا تقييماتكم الحقيقية لتحصلوا على نتائج حقيقية.</p>
+</div>
+
+<script>
+(function(){
+  /* ---------- sample data (generated for the demo, not real reviews) ---------- */
+  var SAMPLE=[
+    {s:'2024',r:5,x:'تجربة رائعة، كل منطقة تحسسك إنك في بلد مختلف. التنوع كبير والأطفال انبسطوا.',t:'تنوّع المناطق والتجارب',m:'pos'},
+    {s:'2024',r:5,x:'Loved the variety of country zones, every corner felt different.',t:'تنوّع المناطق والتجارب',m:'pos'},
+    {s:'2024',r:4,x:'الأكل في المناطق ممتاز وخيارات كثيرة، جربنا أطباق من كذا بلد.',t:'الأكل',m:'pos'},
+    {s:'2024',r:4,x:'التنظيم كان جيد والمواقف متوفرة، دخلنا بدون تعب.',t:'التنظيم والإرشاد',m:'pos'},
+    {s:'2024',r:5,x:'الدخول سلس والموظفين متعاونين.',t:'التنظيم والإرشاد',m:'pos'},
+    {s:'2024',r:4,x:'العروض والأجواء حلوة، يستاهل الزيارة مع العائلة.',t:'تنوّع المناطق والتجارب',m:'pos'},
+    {s:'2024',r:3,x:'حلو بس الزحام في الويكند شديد، انتظرنا كثير عند الألعاب.',t:'الزحام والانتظار',m:'mixed'},
+    {s:'2024',r:4,x:'المطاعم متنوعة والخدمة سريعة.',t:'الأكل',m:'pos'},
+    {s:'2024',r:5,x:'ما توقعت أشوف هالقد من الجديد، كل زيارة فيها شي مختلف.',t:'تجديد المحتوى',m:'pos'},
+    {s:'2024',r:3,x:'التجربة ممتازة لكن الأسعار شوي عالية على العائلة الكبيرة.',t:'الأسعار',m:'mixed'},
+    {s:'2024',r:5,x:'Amazing atmosphere and great for photos.',t:'تنوّع المناطق والتجارب',m:'pos'},
+    {s:'2024',r:4,x:'الإرشادات واضحة والخريطة سهلة.',t:'التنظيم والإرشاد',m:'pos'},
+
+    {s:'2025',r:2,x:'الزحام أسوأ من السنة اللي فاتت، انتظرنا ساعة عند أشهر منطقة.',t:'الزحام والانتظار',m:'neg'},
+    {s:'2025',r:3,x:'الأسعار ارتفعت مقارنة بالسنة الماضية، الأكل غالي على الكمية.',t:'الأسعار',m:'neg'},
+    {s:'2025',r:4,x:'المناطق الجديدة حلوة بس عددها قليل.',t:'تنوّع المناطق والتجارب',m:'pos'},
+    {s:'2025',r:3,x:'حسّيت إن كثير أشياء نفسها اللي شفناها السنة اللي فاتت.',t:'تجديد المحتوى',m:'neg'},
+    {s:'2025',r:3,x:'المواقف مزدحمة وصعب نلاقي مكان، والخروج أخذ وقت طويل.',t:'التنظيم والإرشاد',m:'neg'},
+    {s:'2025',r:4,x:'الأكل لذيذ، بس لازم تنتظر في الطابور.',t:'الأكل',m:'mixed'},
+    {s:'2025',r:2,x:'Not as exciting as last year. Felt repetitive.',t:'تجديد المحتوى',m:'neg'},
+    {s:'2025',r:4,x:'الأجواء حلوة والأطفال استمتعوا.',t:'تنوّع المناطق والتجارب',m:'pos'},
+    {s:'2025',r:3,x:'الدخول مجاني بس كل شي بداخله مكلف.',t:'الأسعار',m:'neg'},
+    {s:'2025',r:4,x:'الموظفين محترمين والإرشاد واضح.',t:'التنظيم والإرشاد',m:'pos'},
+    {s:'2025',r:3,x:'المكان جميل لكن الزحام يفسد التجربة وقت الذروة.',t:'الزحام والانتظار',m:'mixed'},
+    {s:'2025',r:5,x:'ما فيه أحلى من هالأجواء، سهرة ممتعة.',t:'تنوّع المناطق والتجارب',m:'pos'},
+
+    {s:'2026',r:4,x:'المناطق الجديدة أضافت حماس، التنوع أحسن من السنة اللي فاتت.',t:'تنوّع المناطق والتجارب',m:'pos'},
+    {s:'2026',r:3,x:'الانتظار طويل عند المداخل وقت الذروة.',t:'الزحام والانتظار',m:'neg'},
+    {s:'2026',r:5,x:'حسّيت فيه جديد فعلًا وتجارب ما جربناها.',t:'تجديد المحتوى',m:'pos'},
+    {s:'2026',r:3,x:'الأسعار لسا مرتفعة.',t:'الأسعار',m:'neg'},
+    {s:'2026',r:4,x:'خيارات الأكل ممتازة والخدمة أسرع.',t:'الأكل',m:'pos'},
+    {s:'2026',r:4,x:'تحسّن تنظيم الدخول عن السنة الماضية.',t:'التنظيم والإرشاد',m:'pos'},
+    {s:'2026',r:3,x:'الزحام في الويكند ما يتحمل.',t:'الزحام والانتظار',m:'neg'},
+    {s:'2026',r:5,x:'A great evening, loved the new zones.',t:'تنوّع المناطق والتجارب',m:'pos'},
+    {s:'2026',r:4,x:'ودنا نشوف عروض أكثر بعد التاسعة.',t:'تجديد المحتوى',m:'mixed'},
+    {s:'2026',r:3,x:'لوحات التوجيه قليلة، تهنا بين المناطق.',t:'التنظيم والإرشاد',m:'neg'},
+    {s:'2026',r:4,x:'الأطفال أحبوا الألعاب.',t:'تنوّع المناطق والتجارب',m:'pos'},
+    {s:'2026',r:4,x:'الأسعار مقبولة في بعض الأماكن وغالية في غيرها.',t:'الأسعار',m:'mixed'}
+  ];
+  var SAVED_B={
+    shifts:[
+      {theme:'الزحام والانتظار',change:'من 1 من 12 في 2024 إلى 2 من 12 في 2025 و2026',why:'الإشارات في الموسمين الأخيرين سلبية في أغلبها، وتتركز في الويكند وعند المداخل.'},
+      {theme:'تجديد المحتوى',change:'سلبي في 2025، وإيجابي في 2026',why:'تقييمات 2025 اشتكت من التكرار، وتقييمات 2026 مدحت المناطق الجديدة.'},
+      {theme:'الأسعار',change:'من 1 من 12 إلى 2 من 12 في الموسمين الأخيرين',why:'الشكاوى تقارن السعر بالكمية وبالموسم السابق.'},
+      {theme:'التنظيم والإرشاد',change:'إيجابي بالكامل في 2024، ومختلط بعده',why:'المواقف في 2025، ولوحات التوجيه في 2026.'}
+    ],
+    opportunities:[
+      {title:'عروض مسائية بعد التاسعة',evidence:'تقييم 2026 طلب عروضًا أكثر في آخر السهرة.'},
+      {title:'البناء على المناطق الجديدة',evidence:'متوسط التقييم ارتفع من 3.3 في 2025 إلى 3.8 في 2026 مع ذكر المناطق الجديدة بإيجابية.'}
+    ],
+    recs:[
+      {priority:'عاجل',title:'خففوا الانتظار عند المداخل في الويكند',evidence:'الزحام والانتظار ظهر في 2 من 12 تقييمًا في كل من 2025 و2026، مقابل 1 في 2024.',action:'أضيفوا مسارات دخول وحجزًا مسبقًا لأوقات الذروة.',kpi:'المؤشر: انخفاض ذكر الانتظار في التقييمات'},
+      {priority:'مهم',title:'جدّدوا التجارب كل موسم وأعلنوها مبكرًا',evidence:'التكرار تصدّر شكاوى 2025، والمناطق الجديدة رفعت التقييم في 2026.',action:'أضيفوا مناطق أو تجارب جديدة في كل موسم.',kpi:'المؤشر: متوسط التقييم 4.0 أو أعلى'},
+      {priority:'مهم',title:'حسّنوا التوجيه والمواقف',evidence:'الضياع بين المناطق ذُكر في 2026، والمواقف في 2025.',action:'لوحات توجيه أكثر، وخريطة رقمية، وتنظيم مواقف السيارات.',kpi:'المؤشر: عدم ظهور شكاوى التوجيه'},
+      {priority:'تحسين',title:'راجعوا الأسعار',evidence:'الأسعار ظهرت في 2 من 12 تقييمًا في كل من 2025 و2026.',action:'باقات عائلية وأسعار معلنة قبل الدخول.',kpi:'المؤشر: انخفاض الشكاوى السعرية'}
+    ],
+    lessons:[
+      'الزحام يزيد مع الشهرة، فتُخطَّط الطاقة الاستيعابية قبل الموسم.',
+      'الجديد يرفع الرضا والتكرار يخفضه، فتُجدَّد التجارب كل موسم.',
+      'التنظيم الجيد في الدخول والتوجيه يُحفظ كمعيار للمواسم القادمة.',
+      'العينة صغيرة (12 تقييمًا لكل موسم)، فتُؤكَّد النتائج على بيانات أكبر.'
+    ]
+  };
+  var MAX_ROWS=150;
+
+  /* ---------- helpers ---------- */
+  function $(id){return document.getElementById(id)}
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function stars(n){return n+' ★'}
+  var state={reviews:[],isSample:true,truncated:false,running:false,live:null,ctl:null};
+  var sampleFn=null;
+
+  function setReviews(list,isSample,truncated){
+    state.reviews=list.map(function(r,i){var o={id:i+1,s:r.s,r:r.r,x:r.x};if(r.t){o.t=r.t;o.m=r.m}return o});
+    state.isSample=isSample;state.truncated=!!truncated;state.live=null;
+    drawData();drawSteps(null);drawResults();
+  }
+
+  /* ---------- csv ---------- */
+  function parseCSV(t){
+    t=t.replace(/^﻿/,'');
+    var first=t.split(/\r?\n/)[0]||'';
+    var d=first.indexOf('\t')>-1?'\t':',';
+    var rows=[],row=[],cur='',q=false,i,c;
+    function endRow(){row.push(cur);cur='';if(row.some(function(x){return x.trim()!==''}))rows.push(row);row=[]}
+    for(i=0;i<t.length;i++){
+      c=t[i];
+      if(q){if(c==='"'){if(t[i+1]==='"'){cur+='"';i++}else q=false}else cur+=c}
+      else if(c==='"')q=true;
+      else if(c===d){row.push(cur);cur=''}
+      else if(c==='\n'||c==='\r'){if(c==='\r'&&t[i+1]==='\n')i++;endRow()}
+      else cur+=c;
+    }
+    if(cur!==''||row.length)endRow();
+    return rows;
+  }
+  function findCol(head,names){
+    for(var i=0;i<head.length;i++){for(var j=0;j<names.length;j++){if(head[i].indexOf(names[j])>-1)return i}}
+    return -1;
+  }
+  function toReviews(rows){
+    if(!rows.length)return[];
+    var head=rows[0].map(function(h){return h.trim().toLowerCase()});
+    var iS=findCol(head,['season','موسم','year','سنة']),iR=findCol(head,['rating','stars','نجوم','تقييم']),iT=findCol(head,['text','review','نص','تعليق']);
+    var start=1;
+    if(iS<0||iR<0||iT<0){iS=0;iR=1;iT=2;start=isNaN(parseFloat(rows[0][1]))?1:0}
+    var out=[];
+    for(var k=start;k<rows.length;k++){
+      var rw=rows[k],s=(rw[iS]||'').trim(),r=parseFloat(rw[iR]),x=(rw[iT]||'').replace(/\s+/g,' ').trim();
+      if(!s||!x||isNaN(r)||r<1||r>5)continue;
+      out.push({s:s,r:Math.round(r*10)/10,x:x.slice(0,400)});
+    }
+    return out;
+  }
+
+  /* ---------- aggregate ---------- */
+  function aggregate(reviews,lab){
+    var seasons=[],stats={},cell={},totals={};
+    reviews.forEach(function(r){
+      if(!stats[r.s]){stats[r.s]={n:0,sum:0};seasons.push(r.s);cell[r.s]={}}
+      stats[r.s].n++;stats[r.s].sum+=r.r;
+      var l=lab[r.id];if(!l)return;
+      var c=cell[r.s][l.theme]||(cell[r.s][l.theme]={n:0,pos:0,neg:0,mixed:0});
+      c.n++;c[l.sent]++;totals[l.theme]=(totals[l.theme]||0)+1;
+    });
+    seasons.sort(function(a,b){return a.localeCompare(b,'en',{numeric:true})});
+    seasons.forEach(function(s){stats[s].avg=stats[s].sum/stats[s].n});
+    var themes=Object.keys(totals).sort(function(a,b){return totals[b]-totals[a]});
+    return{seasons:seasons,stats:stats,cell:cell,themes:themes};
+  }
+  function savedLabels(){
+    var lab={};
+    state.reviews.forEach(function(r){lab[r.id]={theme:r.t,sent:r.m==='pos'?'pos':(r.m==='neg'?'neg':'mixed')}});
+    return lab;
+  }
+
+  /* ---------- drawing ---------- */
+  function drawData(){
+    var n=state.reviews.length,ss={};
+    state.reviews.forEach(function(r){ss[r.s]=1});
+    $('data-sum').textContent=n+' تقييمًا في '+Object.keys(ss).length+' مواسم';
+    $('rows').innerHTML=state.reviews.map(function(r){return '<tr><td class="n">'+esc(r.s)+'</td><td class="n">'+esc(stars(r.r))+'</td><td>'+esc(r.x)+'</td></tr>'}).join('');
+    var chip=$('mode-chip');
+    chip.textContent=state.isSample?'عينة تجريبية مولّدة':'بياناتكم';
+    chip.className='pill '+(state.isSample?'warn':'accent');
+    $('restore').hidden=state.isSample;
+    $('data-note').textContent=state.truncated?'الملف أكبر من '+MAX_ROWS+' تقييمًا، فالتحليل على أول '+MAX_ROWS+' فقط.':'';
+  }
+  function drawSteps(states,msgs){
+    var names=['يقرأ التقييمات ويحسب الأرقام','يجمّع التقييمات في مواضيع لكل موسم','يقارن المواسم ويكتب التوصيات'];
+    var def=['يحسب عدد التقييمات ومتوسط النجوم لكل موسم.','يعطي كل تقييم موضوعًا وانطباعًا، ثم تُحسب النسب.','يقرأ التغيّرات بين المواسم ويقترح ما يُغيَّر.'];
+    $('steps').innerHTML=names.map(function(nm,i){
+      var st=states?states[i]:'';
+      var msg=(msgs&&msgs[i])||(st?'':def[i]);
+      return '<li class="step '+st+'"><span class="dot">'+(st==='done'?'✓':(st==='err'?'!':''))+'</span><div><div>'+nm+'</div>'+(msg?'<div class="r">'+esc(msg)+'</div>':'')+'</div></li>';
+    }).join('');
+  }
+  function matrix(agg){
+    var h='<div class="mxw"><div class="mx" style="--n:'+agg.seasons.length+'"><div class="mx-r mx-h"><span>الموضوع</span>'+agg.seasons.map(function(s){return '<span>'+esc(s)+'</span>'}).join('')+'</div>';
+    agg.themes.forEach(function(t){
+      h+='<div class="mx-r"><span class="mx-t">'+esc(t)+'</span>'+agg.seasons.map(function(s){
+        var c=agg.cell[s][t];
+        if(!c)return '<span class="mx-c dim">—</span>';
+        var N=agg.stats[s].n;
+        return '<span class="mx-c"><span><b>'+c.n+'</b> <small>('+Math.round(c.n/N*100)+'%)</small></span><span class="stack"><i class="pos" style="flex:'+c.pos+'"></i><i class="mix" style="flex:'+c.mixed+'"></i><i class="neg" style="flex:'+c.neg+'"></i></span></span>';
+      }).join('')+'</div>';
+    });
+    return h+'</div></div><div class="legend"><span class="l1">إيجابي</span><span class="l2">مختلط</span><span class="l3">سلبي</span></div>';
+  }
+  function prClass(p){return p==='عاجل'?'signal':(p==='مهم'?'accent':'warn')}
+  function drawResults(){
+    var box=$('results'),sub=$('res-sub');
+    var agg,B,label;
+    if(state.live){agg=state.live.agg;B=state.live.B;label='نتيجة مباشرة من الوكيل · '+state.live.time}
+    else if(state.isSample){agg=aggregate(state.reviews,savedLabels());B=SAVED_B;label='نتيجة محفوظة على العينة. اضغط «شغّل المستشار» لتحليل مباشر.'}
+    else{sub.textContent='';box.innerHTML='<div class="empty">اضغطوا «شغّل المستشار» لتحليل التقييمات التي رفعتموها. ستظهر هنا النتائج بحسب الموسم.</div>';return}
+    sub.textContent=label;
+    var h='<div style="display:flex;flex-direction:column;gap:22px">';
+    h+='<div class="seasons">'+agg.seasons.map(function(s){var st=agg.stats[s];return '<div class="season"><b>'+esc(s)+'</b><span class="muted" style="font-size:13px">'+st.n+' تقييمًا</span><span class="avg">'+st.avg.toFixed(1)+' <small>من 5</small></span><span class="meter"><i style="width:'+(st.avg/5*100).toFixed(0)+'%"></i></span></div>'}).join('')+'</div>';
+    h+='<div class="panel"><h3>المواضيع حسب الموسم</h3>'+matrix(agg)+(state.live&&state.live.note?'<p class="note">'+esc(state.live.note)+'</p>':'')+'</div>';
+    if(B.shifts&&B.shifts.length)h+='<div class="panel"><h3>ما تغيّر بين المواسم</h3><div class="list">'+B.shifts.map(function(x){return '<div class="item"><span><b>'+esc(x.theme)+'</b> · '+esc(x.change)+'</span><span class="why">'+esc(x.why)+'</span></div>'}).join('')+'</div></div>';
+    if(B.opportunities&&B.opportunities.length)h+='<div class="panel"><h3>فرص غير مستغلة</h3><div class="list">'+B.opportunities.map(function(x){return '<div class="item"><b>'+esc(x.title)+'</b><span class="why">'+esc(x.evidence)+'</span></div>'}).join('')+'</div></div>';
+    if(B.recs&&B.recs.length)h+='<div><h3 style="margin-bottom:10px">التوصيات للمنظم</h3><div class="recs">'+B.recs.map(function(x){return '<article class="rec"><div><span class="pill '+prClass(x.priority)+'">'+esc(x.priority)+'</span></div><h3>'+esc(x.title)+'</h3><p class="why">'+esc(x.evidence)+'</p><p>'+esc(x.action)+'</p><p class="kpi-t">'+esc(x.kpi)+'</p></article>'}).join('')+'</div></div>';
+    if(B.lessons&&B.lessons.length)h+='<div class="panel"><h3>دروس يقترح الوكيل حفظها للمواسم القادمة</h3><ul style="margin:0;padding-inline-start:20px">'+B.lessons.map(function(x){return '<li>'+esc(x)+'</li>'}).join('')+'</ul></div>';
+    h+='</div>';
+    box.innerHTML=h;
+  }
+
+  /* ---------- the agent ---------- */
+  function errMsg(e){
+    var c=e&&e.code;
+    if(c==='not_granted')return 'لم يُسمح للصفحة باستخدام Claude، فالتشغيل المباشر غير متاح.';
+    if(c==='rate_limited')return 'وصلتم حد الاستخدام، جرّبوا بعد قليل.';
+    if(c==='invalid_json')return 'ما رجع الوكيل نتيجة منظمة. اضغطوا تشغيل مرة ثانية.';
+    if(c==='prompt_too_large')return 'البيانات كبيرة، قلّلوا عدد التقييمات.';
+    if(c==='cancelled')return 'تم الإيقاف.';
+    return 'تعذّر إكمال التحليل. جرّبوا مرة ثانية.';
+  }
+  function shortQuote(x){return x.length>160?x.slice(0,160)+'…':x}
+  async function runAgent(){
+    if(!sampleFn||state.running)return;
+    state.running=true;state.ctl=new AbortController();
+    $('run').disabled=true;$('stop').hidden=false;
+    var states=['run','wait','wait'],msgs=[];
+    drawSteps(states,msgs);
+    var reviews=state.reviews;
+    try{
+      /* step 1: local numbers */
+      var base=aggregate(reviews,{});
+      states[0]='done';msgs[0]=reviews.length+' تقييمًا في '+base.seasons.length+' مواسم. '+base.seasons.map(function(s){return s+': '+base.stats[s].avg.toFixed(1)}).join(' · ');
+      states[1]='run';drawSteps(states,msgs);
+
+      /* step 2: label every review */
+      var lines=reviews.map(function(r){return r.id+'|'+r.s+'|'+r.r+'|'+r.x}).join('\n');
+      var pa='أنت محلل تجربة زوار. فيما يلي تقييمات لفعالية موسمية، كل سطر بهذا الشكل: id|الموسم|النجوم|النص.\n'+
+        'المطلوب: (1) حدّد من 4 إلى 7 مواضيع رئيسية قصيرة بالعربية (مثل «الزحام والانتظار» و«الأسعار») تغطي التقييمات، واستخدم الأسماء نفسها لكل المواسم. '+
+        '(2) أعطِ كل تقييم موضوعًا رئيسيًا واحدًا من قائمتك، وانطباعًا: pos أو neg أو mixed. لا تخترع تقييمات ولا ids.\n'+
+        'أجب بـ JSON فقط بهذا الشكل: {"themes":["..."],"labels":[{"id":1,"theme":"...","sentiment":"pos"}]}\n\n'+lines;
+      var a=await sampleFn.json(pa,{signal:state.ctl.signal});
+      if(!a||!Array.isArray(a.labels))throw{code:'invalid_json',message:'labels missing'};
+      var lab={},labelled=0,valid={pos:1,neg:1,mixed:1};
+      a.labels.forEach(function(l){
+        if(!l||typeof l.theme!=='string')return;
+        var idn=Number(l.id);if(!reviews.some(function(r){return r.id===idn}))return;
+        if(!lab[idn])labelled++;
+        lab[idn]={theme:l.theme.trim(),sent:valid[l.sentiment]?l.sentiment:'mixed'};
+      });
+      if(!labelled)throw{code:'invalid_json',message:'no valid labels'};
+      var agg=aggregate(reviews,lab);
+      states[1]='done';msgs[1]='صنّف '+labelled+' من '+reviews.length+' تقييمًا في '+agg.themes.length+' مواضيع.';
+      states[2]='run';drawSteps(states,msgs);
+
+      /* step 3: compare seasons, write recommendations */
+      var summary={seasons:agg.seasons.map(function(s){
+        return{season:s,reviews:agg.stats[s].n,avgStars:Number(agg.stats[s].avg.toFixed(2)),themes:agg.themes.filter(function(t){return agg.cell[s][t]}).map(function(t){var c=agg.cell[s][t];return{theme:t,count:c.n,pos:c.pos,mixed:c.mixed,neg:c.neg}})};
+      })};
+      var ex=[];
+      agg.seasons.forEach(function(s){
+        var rs=reviews.filter(function(r){return r.s===s}).sort(function(p,q){return p.r-q.r});
+        var pick=rs.slice(0,2).concat(rs.slice(-1));
+        pick.forEach(function(r){ex.push({season:s,stars:r.r,text:shortQuote(r.x)})});
+      });
+      var pb='أنت مستشار فعاليات. لديك ملخص تحليل تقييمات الزوار لفعالية موسمية بحسب الموسم، والأرقام محسوبة فلا تغيّرها، ومعها أمثلة من النصوص.\n'+
+        'اكتب بالعربية المبسطة: shifts: ما تغيّر بين المواسم (3 إلى 5 عناصر، لكل عنصر theme وchange وwhy). opportunities: فرص غير مستغلة (0 إلى 3، لكل واحدة title وevidence). '+
+        'recs: من 3 إلى 5 توصيات عملية مرتبة، لكل واحدة priority من (عاجل، مهم، تحسين) وtitle وevidence (بأرقام من الملخص) وaction وkpi (مؤشر قابل للقياس يبدأ بكلمة «المؤشر:»). lessons: 3 دروس تُحفظ للمواسم القادمة.\n'+
+        'لا تذكر معلومات غير موجودة في البيانات، ونبّه في أحد الدروس إلى صغر العينة إن كان عدد التقييمات لكل موسم أقل من 30.\n'+
+        'أجب بـ JSON فقط: {"shifts":[{"theme":"","change":"","why":""}],"opportunities":[{"title":"","evidence":""}],"recs":[{"priority":"عاجل","title":"","evidence":"","action":"","kpi":""}],"lessons":[""]}\n\n'+
+        'الملخص:\n'+JSON.stringify(summary)+'\n\nأمثلة:\n'+JSON.stringify(ex);
+      var B=await sampleFn.json(pb,{signal:state.ctl.signal});
+      if(!B||typeof B!=='object'||!Array.isArray(B.recs))throw{code:'invalid_json',message:'recs missing'};
+      states[2]='done';msgs[2]='كتب '+B.recs.length+' توصيات وحفظ '+((B.lessons||[]).length)+' دروس.';
+      var d=new Date(),hh=('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);
+      state.live={agg:agg,B:B,time:hh,note:labelled<reviews.length?'صُنّف '+labelled+' من '+reviews.length+' تقييمًا.':''};
+      drawSteps(states,msgs);drawResults();
+    }catch(e){
+      var i=states.indexOf('run');if(i<0)i=states.indexOf('wait');
+      if(i>=0){states[i]='err';msgs[i]=errMsg(e)}
+      drawSteps(states,msgs);
+    }finally{
+      state.running=false;state.ctl=null;$('run').disabled=false;$('stop').hidden=true;
+    }
+  }
+
+  /* ---------- wiring ---------- */
+  $('run').addEventListener('click',runAgent);
+  $('stop').addEventListener('click',function(){if(state.ctl)state.ctl.abort()});
+  $('restore').addEventListener('click',function(){setReviews(SAMPLE,true,false)});
+  $('file').addEventListener('change',function(ev){
+    var f=ev.target.files&&ev.target.files[0];if(!f)return;
+    var fr=new FileReader();
+    fr.onload=function(){
+      var list=toReviews(parseCSV(String(fr.result||'')));
+      if(list.length<3){$('data-note').textContent='ما قدرنا نقرأ تقييمات من هذا الملف. تأكدوا من الأعمدة season,rating,text.';return}
+      var cut=list.length>MAX_ROWS;
+      setReviews(list.slice(0,MAX_ROWS),false,cut);
+    };
+    fr.onerror=function(){$('data-note').textContent='تعذّرت قراءة الملف.'};
+    fr.readAsText(f);
+    ev.target.value='';
+  });
+
+  setReviews(SAMPLE,true,false);
+
+  try{
+    if(window.claude&&window.claude.use){
+      window.claude.use('sample').then(function(s){
+        sampleFn=s;
+        if(!s){$('run').hidden=true;$('run-hint').textContent='التشغيل المباشر غير متاح في هذا العرض. النتيجة المعروضة محفوظة على العينة.'}
+      }).catch(function(){$('run').hidden=true});
+    }else{$('run').hidden=true;$('run-hint').textContent='التشغيل المباشر غير متاح في هذا العرض. النتيجة المعروضة محفوظة على العينة.'}
+  }catch(e){$('run').hidden=true}
+})();
+</script>
+</body>
+</html>
