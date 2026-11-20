@@ -38,6 +38,15 @@ Agent X Hackathon · team **beyond limits** · NEC track: «تحويل الفع�
 - **التوصية** تظهر فقط إذا تكررت الشكوى 5 مرات على الأقل من 3 مصادر مستقلة.
 - **كل رقم قابل للمراجعة:** الضغط عليه يفتح الأمثلة الحرفية خلفه.
 
+## التقنيات | Tech stack
+
+- **HTML وCSS وJavaScript** في ملف واحد (`index.html`): الشكل داخل وسم `<style>` والمنطق داخل `<script>`. لذلك تعرض GitHub اللغة «HTML 100%».
+- **بدون مكتبات ولا خادم ولا نموذج لغوي ولا واجهات API:** كل التحليل يجري داخل المتصفح بقواعد وقوائم كلمات.
+- **البيانات** مجمّعة مسبقًا ومضمّنة في الملف (قوقل ماب وتيك توك وX). الفعاليات التي يضيفها المستخدم تُحفظ في متصفحه فقط (`localStorage`).
+- **تقرير PDF** يُرسم ويُولَّد داخل المتصفح.
+
+*English:* a single `index.html` using plain HTML, CSS and JavaScript (styles in `<style>`, logic in `<script>`), which is why GitHub reports "HTML 100%". No libraries, server, LLM or API calls: all analysis is rule-based and runs in the browser on pre-collected data. User-added events are stored in the browser's `localStorage`. The PDF report is generated client-side.
+
 ## البنية: إضافة مصدر بدون إعادة بناء
 
 كل مصدر يتحول إلى صف موحّد (النص، المنصة، التاريخ، النجوم إن وجدت، الفعالية)، ثم يمر في خط التحليل نفسه. لذلك المقارنة بين المنصات والمشاعر والتوصيات تعمل لأي مصدر جديد دون تغيير المنطق.
