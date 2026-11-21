@@ -116,6 +116,15 @@ label.chk{display:flex;gap:8px;align-items:center;font-size:13.5px}
 .gx{stroke:var(--line);stroke-width:1}.gt{fill:var(--mut);font-size:11px;font-family:var(--fb)}
 .legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:var(--mut)}
 .legend i{display:inline-block;width:18px;height:3px;border-radius:2px;vertical-align:middle;margin-inline-end:6px}
+.legend i.sq{width:12px;height:12px;border-radius:3px}
+.chartbox.pc svg{min-width:0;max-width:560px;margin:0 auto}
+.pbc{display:flex;flex-direction:column;gap:6px}
+.pbr{display:grid;grid-template-columns:150px 1fr;gap:10px;align-items:center}
+.pbr .l small{display:block;color:var(--mut);font-size:12px}
+.sbx{display:flex;height:30px;border-radius:8px;overflow:hidden;background:var(--panel2)}
+.sbx i{display:flex;align-items:center;justify-content:center;font-style:normal;font-size:12.5px;font-weight:700;color:#0B1220;white-space:nowrap;overflow:hidden}
+.sbx .p{background:var(--ok)}.sbx .u{background:var(--mut)}.sbx .g{background:var(--bad)}
+@media (max-width:640px){.pbr{grid-template-columns:1fr;gap:4px}}
 .log{max-height:240px;overflow:auto;font-size:13px;display:flex;flex-direction:column;gap:2px}
 .log div{display:flex;gap:10px;padding:3px 0;border-top:1px solid var(--line)}
 .log time{color:var(--mut);flex:none;font-size:12px}
@@ -869,7 +878,7 @@ function platformCard(){
   '<td>'+(x.sent.n?'<div class="sb" title="إيجابي / محايد / سلبي"><i class="p" style="width:'+Math.round(x.sent.pos/x.sent.n*100)+'%"></i><i class="u" style="width:'+Math.round(x.sent.neu/x.sent.n*100)+'%"></i><i class="g" style="width:'+Math.round(x.sent.neg/x.sent.n*100)+'%"></i></div><small>'+pct(x.sent.pos,x.sent.n)+' · '+pct(x.sent.neu,x.sent.n)+' · '+pct(x.sent.neg,x.sent.n)+'</small>':'<span class="small">لا مواد محسومة</span>')+'</td>'+
   '<td>'+(x.negTop?esc(ASPECTS[x.negTop.a].label)+'<small>'+x.negTop.n+' مرة</small>':'—')+'</td><td>'+(x.posTop?esc(ASPECTS[x.posTop.a].label)+'<small>'+x.posTop.n+' مرة</small>':'—')+'</td>'+
   '<td><button class="btn sm" type="button" data-act="platEv" data-p="'+x.p+'">اعرضوا المواد</button></td></tr>').join('');
- return '<div class="card stack" style="gap:8px"><h3>مقارنة بين المنصات</h3><div class="tw"><table><thead><tr><th>المنصة</th><th>المواد</th><th>إيجابي · محايد · سلبي</th><th>أكثر شكوى</th><th>أكثر إشادة</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
+ return '<div class="card stack" style="gap:8px"><h3>مقارنة بين المنصات</h3>'+platformChart(pl)+'<div class="tw"><table><thead><tr><th>المنصة</th><th>المواد</th><th>إيجابي · محايد · سلبي</th><th>أكثر شكوى</th><th>أكثر إشادة</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
   '<div class="small">'+esc(platRead())+'</div><div class="small">الشعور العام: في قوقل ماب من نجوم التقييم حين تتوفر (4–5 إيجابي، 3 محايد، 1–2 سلبي)، وإلا ومع بقية المنصات بقواعد النص (كلمات المدح والذم والجوانب المذكورة). المواد الرسمية والأسئلة لا تدخل.</div></div>';
 }
 function topicsCard(){
@@ -977,6 +986,34 @@ function chartSvg(ws){
  });
  return '<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="نسبة الشكاوى أسبوعًا بعد أسبوع لكل موسم">'+g+'</svg>';
 }
+function opn(n){return n===1?'رأي واحد':n===2?'رأيان':fmt(n)+(n<=10?' آراء':' رأيًا')}
+function periodChart(rows){
+ const pts=rows.filter(o=>o.s.N>0);if(pts.length<2)return '';
+ const W=420,H=250,pl=40,pr=10,pt=26,pb=64,pw=W-pl-pr,ph=H-pt-pb,base=pt+ph,gap=pw/pts.length,bw=Math.min(56,gap*.56);
+ const vals=pts.map(o=>o.s.negAny/o.s.N*100),mx=Math.max(...vals,8);
+ const st=[1,2,5,10,20,25,50,100].find(k=>k*4>=mx)||100,ymax=st*4,y=v=>pt+ph*(1-v/ymax);
+ let g='';
+ for(let k=0;k<=4;k++){const v=ymax*k/4,yy=y(v);g+='<line class="gx" x1="'+pl+'" x2="'+(W-pr)+'" y1="'+yy+'" y2="'+yy+'"/><text class="gt" x="'+(pl-6)+'" y="'+(yy+4)+'" text-anchor="end">'+Math.round(v)+'%</text>'}
+ pts.forEach((o,i)=>{
+  const cx=pl+gap*(i+.5),v=vals[i],small=o.s.N<8,top=y(v),sel=o.id===V.ui.season;
+  const lbl=String(o.id).replace(/^\d+\s*·\s*/,''),m=lbl.match(/^(\S+)\s+(.+)$/),ln=m?[m[1],m[2]]:[lbl];
+  g+='<rect x="'+(cx-bw/2).toFixed(1)+'" y="'+top.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+Math.max(1,base-top).toFixed(1)+'" rx="4" '+
+   (small?'fill="none" stroke="var(--bad)" stroke-width="2" stroke-dasharray="4 3"':'fill="var(--bad)" fill-opacity="'+(sel?1:.8)+'"'+(sel?' stroke="var(--fg)" stroke-width="2"':''))+
+   '><title>'+esc(lbl)+': '+Math.round(v)+'% ('+o.s.negAny+' من '+o.s.N+')'+(small?' · عدد قليل':'')+'</title></rect>'+
+   '<text x="'+cx.toFixed(1)+'" y="'+(top-7).toFixed(1)+'" text-anchor="middle" font-size="14" font-weight="700" fill="var(--fg)">'+Math.round(v)+'%</text>'+
+   ln.map((t,j)=>'<text x="'+cx.toFixed(1)+'" y="'+(base+17+j*16)+'" text-anchor="middle" font-size="13" fill="var(--fg)">'+esc(t)+'</text>').join('')+
+   '<text x="'+cx.toFixed(1)+'" y="'+(base+17+ln.length*16+2)+'" text-anchor="middle" font-size="12" fill="var(--mut)">'+esc(opn(o.s.N))+'</text>';
+ });
+ const aria='نسبة الزوار الذين اشتكوا من شيء: '+pts.map((o,i)=>String(o.id).replace(/^\d+\s*·\s*/,'')+' '+Math.round(vals[i])+'% من '+o.s.N).join('، ');
+ return '<div class="chartbox pc"><svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+esc(aria)+'">'+g+'</svg></div>';
+}
+function platformChart(pl){
+ const rows=pl.filter(x=>x.sent&&x.sent.n>0);if(rows.length<2)return '';
+ const seg=(cls,k,n)=>{const w=n/k*100;return '<i class="'+cls+'" style="width:'+w.toFixed(1)+'%">'+(w>=11?Math.round(w)+'%':'')+'</i>'};
+ return '<div class="pbc">'+rows.map(x=>'<div class="pbr"><div class="l"><b>'+PLAT[x.p]+'</b><small>'+mAd(x.sent.n)+'</small></div>'+
+  '<div class="sbx" role="img" aria-label="'+esc(PLAT[x.p]+': إيجابي '+Math.round(x.sent.pos/x.sent.n*100)+'% ومحايد '+Math.round(x.sent.neu/x.sent.n*100)+'% وسلبي '+Math.round(x.sent.neg/x.sent.n*100)+'%')+'">'+seg('p',x.sent.n,x.sent.pos)+seg('u',x.sent.n,x.sent.neu)+seg('g',x.sent.n,x.sent.neg)+'</div></div>').join('')+
+  '<div class="legend" style="margin-top:4px"><span><i class="sq" style="background:var(--ok)"></i>إيجابي</span><span><i class="sq" style="background:var(--mut)"></i>محايد</span><span><i class="sq" style="background:var(--bad)"></i>سلبي</span></div></div>';
+}
 function renderHappened(){
  if(!P.items.length){$('p-happened').innerHTML=emptyEvent();return}
  const c=V.cur,ui=V.ui,m=mode(),iss=issues(),gd=goods(),qs=questions(),top=iss[0];
@@ -1005,6 +1042,7 @@ function renderHappened(){
   '<div class="card"><h3>ماذا يسألون قبل الزيارة؟</h3>'+qHtml+'</div>'+
   '<div><h3 class="sec">أين تظهر المشاكل في رحلة الزائر؟</h3><div class="stages">'+stg+'</div></div>'+
   '<div><h3 class="sec">مقارنة بالمواسم السابقة</h3><p class="secp">المقارنة على: '+esc(perLabel())+'. كل رقم هو حصة الآراء التي ذكرت الجانب، مع العدد الذي بُنيت عليه.'+(V.dated?'':' هذه فترات بلا تواريخ افتتاح (مثل «قبل سنة» في قوقل ماب)، فهي تقريبية وأعداد كل فترة قد تكون صغيرة، والمقارنة بينها للاستئناس لا للجزم.')+'</p>'+
+   '<div class="card" style="margin-bottom:12px"><h3>'+(V.dated?'الشكاوى في كل موسم':'الشكاوى بحسب الفترة (تقريبية)')+'</h3>'+periodChart(dated)+'<div class="small">العمود = نسبة الزوار الذين اشتكوا من شيء، من الأقدم (يسار) إلى الأحدث (يمين). العمود المنقّط: أقل من ٨ آراء فلا يُعتمد عليه.</div></div>'+
    '<div class="tw"><table><thead><tr><th>الموسم</th><th>آراء الزوار</th><th>اشتكوا من شيء</th>'+iss.slice(0,3).map(z=>'<th>'+esc(ASPECTS[z.a].label)+'</th>').join('')+'</tr></thead><tbody>'+cmpRows+'</tbody></table></div></div>'+
   (ws?'<div class="card"><h3>الشكاوى أسبوعًا بعد أسبوع</h3><div class="legend" style="margin-bottom:6px">'+ws.ids.map((id,i)=>'<span><i style="background:'+CHART_COLS[i%CHART_COLS.length]+'"></i>'+esc(id)+(id===ui.season?' (المحدد)':'')+'</span>').join('')+'<span>○ أسبوع بآراء قليلة</span></div><div class="chartbox">'+chartSvg(ws)+'</div></div>':'')+
   (ar.length?'<div><h3 class="sec">المناطق</h3><p class="secp">المناطق التي فيها ١٠ آراء أو أكثر، مرتبة بحسب نسبة الشكاوى.</p><div class="tw"><table><thead><tr><th>المنطقة</th><th>آراء</th><th>اشتكوا من شيء</th><th>أكثر شكوى</th><th></th></tr></thead><tbody>'+
