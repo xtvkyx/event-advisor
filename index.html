@@ -989,18 +989,17 @@ function chartSvg(ws){
 function opn(n){return n===1?'رأي واحد':n===2?'رأيان':fmt(n)+(n<=10?' آراء':' رأيًا')}
 function periodChart(rows){
  const pts=rows.filter(o=>o.s.N>0);if(pts.length<2)return '';
- const W=420,H=250,pl=40,pr=10,pt=26,pb=64,pw=W-pl-pr,ph=H-pt-pb,base=pt+ph,gap=pw/pts.length,bw=Math.min(56,gap*.56);
+ const W=420,H=250,pl=40,pr=14,pt=28,pb=64,pw=W-pl-pr,ph=H-pt-pb,base=pt+ph,gap=pw/pts.length;
  const vals=pts.map(o=>o.s.negAny/o.s.N*100),mx=Math.max(...vals,8);
- const st=[1,2,5,10,20,25,50,100].find(k=>k*4>=mx)||100,ymax=st*4,y=v=>pt+ph*(1-v/ymax);
+ const st=[1,2,5,10,20,25,50,100].find(k=>k*4>=mx)||100,ymax=st*4,y=v=>pt+ph*(1-v/ymax),X=i=>pl+gap*(i+.5);
  let g='';
  for(let k=0;k<=4;k++){const v=ymax*k/4,yy=y(v);g+='<line class="gx" x1="'+pl+'" x2="'+(W-pr)+'" y1="'+yy+'" y2="'+yy+'"/><text class="gt" x="'+(pl-6)+'" y="'+(yy+4)+'" text-anchor="end">'+Math.round(v)+'%</text>'}
+ g+='<path d="'+pts.map((o,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+y(vals[i]).toFixed(1)).join(' ')+'" fill="none" stroke="var(--bad)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>';
  pts.forEach((o,i)=>{
-  const cx=pl+gap*(i+.5),v=vals[i],small=o.s.N<8,top=y(v),sel=o.id===V.ui.season;
+  const cx=X(i),v=vals[i],small=o.s.N<8,cy=y(v),sel=o.id===V.ui.season;
   const lbl=String(o.id).replace(/^\d+\s*·\s*/,''),m=lbl.match(/^(\S+)\s+(.+)$/),ln=m?[m[1],m[2]]:[lbl];
-  g+='<rect x="'+(cx-bw/2).toFixed(1)+'" y="'+top.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+Math.max(1,base-top).toFixed(1)+'" rx="4" '+
-   (small?'fill="none" stroke="var(--bad)" stroke-width="2" stroke-dasharray="4 3"':'fill="var(--bad)" fill-opacity="'+(sel?1:.8)+'"'+(sel?' stroke="var(--fg)" stroke-width="2"':''))+
-   '><title>'+esc(lbl)+': '+Math.round(v)+'% ('+o.s.negAny+' من '+o.s.N+')'+(small?' · عدد قليل':'')+'</title></rect>'+
-   '<text x="'+cx.toFixed(1)+'" y="'+(top-7).toFixed(1)+'" text-anchor="middle" font-size="14" font-weight="700" fill="var(--fg)">'+Math.round(v)+'%</text>'+
+  g+='<circle cx="'+cx.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="'+(sel?6:5)+'" fill="'+(small?'var(--bg)':'var(--bad)')+'" stroke="'+(sel?'var(--fg)':'var(--bad)')+'" stroke-width="2"><title>'+esc(lbl)+': '+Math.round(v)+'% ('+o.s.negAny+' من '+o.s.N+')'+(small?' · عدد قليل':'')+'</title></circle>'+
+   '<text x="'+cx.toFixed(1)+'" y="'+(cy-11).toFixed(1)+'" text-anchor="middle" font-size="14" font-weight="700" fill="var(--fg)">'+Math.round(v)+'%</text>'+
    ln.map((t,j)=>'<text x="'+cx.toFixed(1)+'" y="'+(base+17+j*16)+'" text-anchor="middle" font-size="13" fill="var(--fg)">'+esc(t)+'</text>').join('')+
    '<text x="'+cx.toFixed(1)+'" y="'+(base+17+ln.length*16+2)+'" text-anchor="middle" font-size="12" fill="var(--mut)">'+esc(opn(o.s.N))+'</text>';
  });
@@ -1042,7 +1041,7 @@ function renderHappened(){
   '<div class="card"><h3>ماذا يسألون قبل الزيارة؟</h3>'+qHtml+'</div>'+
   '<div><h3 class="sec">أين تظهر المشاكل في رحلة الزائر؟</h3><div class="stages">'+stg+'</div></div>'+
   '<div><h3 class="sec">مقارنة بالمواسم السابقة</h3><p class="secp">المقارنة على: '+esc(perLabel())+'. كل رقم هو حصة الآراء التي ذكرت الجانب، مع العدد الذي بُنيت عليه.'+(V.dated?'':' هذه فترات بلا تواريخ افتتاح (مثل «قبل سنة» في قوقل ماب)، فهي تقريبية وأعداد كل فترة قد تكون صغيرة، والمقارنة بينها للاستئناس لا للجزم.')+'</p>'+
-   '<div class="card" style="margin-bottom:12px"><h3>'+(V.dated?'الشكاوى في كل موسم':'الشكاوى بحسب الفترة (تقريبية)')+'</h3>'+periodChart(dated)+'<div class="small">العمود = نسبة الزوار الذين اشتكوا من شيء، من الأقدم (يسار) إلى الأحدث (يمين). العمود المنقّط: أقل من ٨ آراء فلا يُعتمد عليه.</div></div>'+
+   '<div class="card" style="margin-bottom:12px"><h3>'+(V.dated?'الشكاوى في كل موسم':'الشكاوى بحسب الفترة (تقريبية)')+'</h3>'+periodChart(dated)+'<div class="small">النقطة = نسبة الزوار الذين اشتكوا من شيء، من الأقدم (يسار) إلى الأحدث (يمين). النقطة المفرغة: أقل من ٨ آراء فلا يُعتمد عليها. الفترات تقريبية، فلا تقرؤوا الخط كاتجاه مؤكد.</div></div>'+
    '<div class="tw"><table><thead><tr><th>الموسم</th><th>آراء الزوار</th><th>اشتكوا من شيء</th>'+iss.slice(0,3).map(z=>'<th>'+esc(ASPECTS[z.a].label)+'</th>').join('')+'</tr></thead><tbody>'+cmpRows+'</tbody></table></div></div>'+
   (ws?'<div class="card"><h3>الشكاوى أسبوعًا بعد أسبوع</h3><div class="legend" style="margin-bottom:6px">'+ws.ids.map((id,i)=>'<span><i style="background:'+CHART_COLS[i%CHART_COLS.length]+'"></i>'+esc(id)+(id===ui.season?' (المحدد)':'')+'</span>').join('')+'<span>○ أسبوع بآراء قليلة</span></div><div class="chartbox">'+chartSvg(ws)+'</div></div>':'')+
   (ar.length?'<div><h3 class="sec">المناطق</h3><p class="secp">المناطق التي فيها ١٠ آراء أو أكثر، مرتبة بحسب نسبة الشكاوى.</p><div class="tw"><table><thead><tr><th>المنطقة</th><th>آراء</th><th>اشتكوا من شيء</th><th>أكثر شكوى</th><th></th></tr></thead><tbody>'+
