@@ -349,6 +349,8 @@ async function chatSend(text){
  text=String(text||'').trim();if(!text||chatBusy)return;
  chatBusy=true;$('chatIn').value='';addMsg('u',esc(text));
  try{
+  /* decide which event the message is about before touching any data */
+  const ev=await resolveChatEvent(text);if(!ev.go)return;
   const t=cn(text),ent={aspects:detAspects(t),area:detArea(t),season:detSeason(t),period:detPeriod(t),plat:detPlat(t)};
   let r;try{r=route(t,ent)}catch(e){r={h:'تعثّر تحليل هذا الطلب. جرّبوا صياغة أخرى.',acts:[],steps:[]}}
   await showReply(r);
@@ -369,6 +371,7 @@ ACT.cdo=t=>{
  else if(w==='dl')makeReport();
  else if(w==='go')ACT.tab({dataset:{v:t.dataset.v}});
  else if(w==='prob'){if(narrow())setChat(false);ACT.openProb({dataset:{a:t.dataset.v}})}
+ else if(w==='evPick')ACT.evPick(t);
  else if(w==='voices'){if(narrow())setChat(false);ACT.openVoices({dataset:{a:t.dataset.v,sent:'neg'}})}
  else if(w==='area')ACT.area({dataset:{id:t.dataset.id}});
  else if(w==='platEv'){if(narrow())setChat(false);ACT.platEv(t)}

@@ -4,9 +4,9 @@ const KEY='blvdw-simple-v5';
 const EX_LESSON={id:'ex1',demo:true,aspect:'wait',problem:'الانتظار عند أكثر تجربة طلبًا تجاوز الحد المقبول في الأسبوع الأول (مثال توضيحي).',
  action:'حجز مواعيد دخول للتجربة وعرض وقت الانتظار على شاشة المدخل.',context:'مثال توضيحي تجريبي: فعالية موسمية، منطقة جديدة، تجربة واحدة بطابور طويل.',
  result:'لم تُسجَّل نتيجة بعد. هذا المثال يوضح شكل الدرس المحفوظ فقط.'};
-const EV_KEYS=['settings','imported','importMeta','saved','ideas','lessons','reviewed','overrides','snaps','lastOk','ui','sources','builtin'];
+const EV_KEYS=['settings','imported','importMeta','saved','ideas','lessons','reviewed','overrides','snaps','lastOk','ui','sources','builtin','searches','lastSearch'];
 const UI0=()=>({season:'كل الفترات',period:'all',area:'all',plat:'all',metric:'negAny',tab:'overview',status:'auto',prob:null,vs:null});
-let S={settings:clone(DEF),builtin:true,batch:1,imported:[],importMeta:null,saved:[],ideas:[],lessons:[clone(EX_LESSON)],reviewed:{},overrides:{},sources:[],
+let S={settings:clone(DEF),builtin:true,batch:1,imported:[],importMeta:null,saved:[],ideas:[],lessons:[clone(EX_LESSON)],reviewed:{},overrides:{},sources:[],searches:{},lastSearch:null,
  events:[{id:'blvd',name:'بوليفارد وورلد'}],eventId:'blvd',evStore:{},
  snaps:[],lastOk:null,lastErr:null,simFail:false,lastDiff:null,runLog:[],ui:UI0()};
 try{const j=JSON.parse(localStorage.getItem(KEY)||'null');if(j&&typeof j==='object'){for(const k in j){if(k in S&&j[k]!=null)S[k]=j[k]}}}catch(e){}
@@ -25,9 +25,9 @@ const sIn=id=>nsd(id)?id:'موسم '+id;
 function allSeasonIds(){const ss=S.settings.seasons;return ss.filter(s=>s.open).sort((a,b)=>a.open<b.open?-1:1).concat(ss.filter(s=>!s.open).sort((a,b)=>a.id<b.id?-1:1)).map(s=>s.id)}
 function seasonOrder(){const all=allSeasonIds(),have=new Set(activeRows().map(r=>r.season)),o=all.filter(id=>have.has(id));return o.length?o:all}
 /* ---------- events (reusable for any event) + sources (adapters) ---------- */
-const PLATS=['gmaps','tiktok','x','other'];
-const PLAT={gmaps:'قوقل ماب',tiktok:'تيك توك',x:'X (تويتر)',other:'منصة أخرى'};
-const PLAT_NOTE={gmaps:'تقييمات الزوار (نصوص ونجوم)',tiktok:'عناوين الفيديوهات وتعليقاتها',x:'نصوص المنشورات',other:'ملف بلا منصة محددة'};
+const PLATS=['gmaps','tiktok','x','web','other'];
+const PLAT={gmaps:'قوقل ماب',tiktok:'تيك توك',x:'X (تويتر)',web:'صفحات الويب',other:'منصة أخرى'};
+const PLAT_NOTE={gmaps:'تقييمات الزوار (نصوص ونجوم)',tiktok:'عناوين الفيديوهات وتعليقاتها',x:'نصوص المنشورات',web:'آراء زوار من صفحات عامة وجدها البحث',other:'ملف بلا منصة محددة'};
 const FUTURE=[
  {id:'gmaps_live',label:'قوقل ماب المباشر',desc:'ربط مباشر لجمع التقييمات والنجوم تلقائيًا بدل رفع الملفات.'},
  {id:'cameras',label:'الكاميرات',desc:'استخدام بيانات الكاميرات الجاهزة (أعداد الزوار وحركة الحشود) لفهم الازدحام وربطه بآراء الزوار، بشرط الخصوصية والموافقات. لا تحكّم مباشر بالكاميرات.'},
@@ -38,7 +38,7 @@ function saveEv(){const o={};for(const k of EV_KEYS)o[k]=clone(S[k]);S.evStore[S
 function loadEv(id){const o=S.evStore[id];if(!o)return false;for(const k of EV_KEYS)if(o[k]!==undefined)S[k]=clone(o[k]);return true}
 function blankEvent(name,kws){
  const nm=name.trim(),st=clone(DEF);st.event=nm;st.seasons=[];st.areas=[];st.dict={names:[nm].concat(kws),hashtags:[],directed:DEF.dict.directed.slice(),excl:[]};
- return {settings:st,imported:[],importMeta:null,saved:[],ideas:[],lessons:[clone(EX_LESSON)],reviewed:{},overrides:{},snaps:[],lastOk:null,ui:UI0(),sources:[],builtin:false};
+ return {settings:st,imported:[],importMeta:null,saved:[],ideas:[],lessons:[clone(EX_LESSON)],reviewed:{},overrides:{},snaps:[],lastOk:null,ui:UI0(),sources:[],builtin:false,searches:{},lastSearch:null};
 }
 function srcCounts(){const c={};activeRows().forEach(r=>{const k=r.platform||(r.stars!=null?'gmaps':'other');c[k]=(c[k]||0)+1});return c}
 function srcTxt(){const c=srcCounts(),l=PLATS.filter(k=>c[k]).map(k=>fmt(c[k])+' من '+PLAT[k]);return l.length?l.join(' · '):'لا بيانات بعد'}
