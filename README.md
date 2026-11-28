@@ -56,11 +56,11 @@ Columns accepted in an uploaded file: `text` (required), `platform` (gmaps, tikt
 
 | Name | Role |
 | --- | --- |
-| غلا الشريف | Team lead, presentation |
-| لميس الجبلي | Data collection |
-| زهى الرويس | Data analysis |
-| غيداء بن معدي | Agent development |
-| ميس الحماد | Interface design |
+| Ghala Alshreef | Team lead, presentation |
+| Lamis AlJabli | Data collection |
+| Zaha Alruwais | Data analysis |
+| Ghaida bin Maadi | Agent development |
+| Mays Alhammad | Interface design |
 
 ## Code and tests
 
