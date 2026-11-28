@@ -568,3 +568,19 @@ function wire(){
  $('scrim').addEventListener('click',()=>{D=null;renderDrawer()});
  document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if($('pv').classList.contains('on')){closePreview();return}if(D){D=null;renderDrawer()}});
 }
+
+/* ---------- voice field + classification corrections ---------- */
+ACT.vfAsp=t=>vfSelect(t.dataset.a);
+ACT.vfDot=t=>{const id=t.dataset.id,it=P.byId[id];if(!it)return;D={title:opinion(it)?'رأي زائر':'مادة لا تُحسب رأيًا',fn:i=>i.id===id,g:1,t:0};renderDrawer()};
+ACT.fixCls=t=>{
+ const id=t.dataset.id,a=t.dataset.a,it=P.byId[id];if(!it)return;
+ fixLog().push({id,prev:S.overrides[id]?clone(S.overrides[id]):null});
+ S.overrides[id]=it.aspects.filter(x=>x.a!==a).map(x=>({a:x.a,p:x.p}));
+ persist();processAll();renderAll();
+ toast('صحّحنا التصنيف: هذا الرأي لم يعد يُحسب شكوى من «'+ASPECTS[a].label+'».');
+};
+ACT.unfixCls=()=>{
+ const f=fixLog().pop();if(!f)return;
+ if(f.prev)S.overrides[f.id]=f.prev;else delete S.overrides[f.id];
+ persist();processAll();renderAll();toast('تراجعنا عن آخر تصحيح.');
+};

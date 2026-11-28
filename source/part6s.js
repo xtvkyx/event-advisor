@@ -161,7 +161,7 @@ function worstAnswer(){
  if(!iss.length)return {h:weakNote()+'<div>ما فيه جانب تكررت الشكوى منه بما يكفي في هذا النطاق.</div>',acts:[],steps:[stepsScope(),stepsData()]};
  const h=weakNote()+'<div><b>أكثر ما أزعج الزوار:</b></div><ul>'+iss.slice(0,3).map(o=>'<li>'+esc(ASPECTS[o.a].label)+': '+txC(o.n,c.N)+esc(flagShort(sigOf(o.a)))+'</li>').join('')+'</ul>';
  const a=iss[0].a;
- return {h,acts:[A('أمثلة من الزوار','ev',{id:cev(ASPECTS[a].label+': ما أزعج الزوار',i=>vis(i)&&i.aspects.some(z=>z.a===a&&z.p==='neg')),pri:true}),A('كل التوصيات','go',{v:'recs'})],steps:[stepsScope(),stepsData(),'رتّبت الجوانب حسب حصة الشكاوى']};
+ return {h,acts:[A('أمثلة من الزوار','ev',{id:cev(ASPECTS[a].label+': ما أزعج الزوار',i=>vis(i)&&i.aspects.some(z=>z.a===a&&z.p==='neg')),pri:true}),A('كل التوصيات','go',{v:'recs'})],steps:[stepsScope(),stepsData(),'رتّبت الجوانب حسب حصة الشكاوى'],after:()=>vfSelect(a)};
 }
 function evidenceAnswer(asp){
  const iss=issues(),a=asp[0]||(iss[0]&&iss[0].a);
@@ -271,7 +271,28 @@ function updateAnswer(){
  return {h:'<div>ما عندنا اتصال مباشر بأي منصة (هذا ضمن «قريبًا»)، فالتحديث يتم بإضافة بيانات جديدة: ارفعوا ملفًا جديدًا واختاروا منصته، أو ألصقوا تعليقات. ما يتكرر لا يُحسب مرتين، وبعدها نعرض لكم «الجديد منذ آخر تحليل».</div>',acts:[A('البيانات','go',{v:'data',pri:true})],steps:[]};
 }
 
+function firstStepAnswer(){
+ const iss=issues(),c=V.cur,m=mode();
+ if(!iss.length)return worstAnswer();
+ const top=iss[0],tied=iss.filter(o=>o.n===top.n),recs=ranked(m),rec=recs[0];
+ const labs=tied.map(o=>'«'+ASPECTS[o.a].label+'»').join(' و');
+ let h=weakNote()+'<div><b>أكبر مشكلة:</b> '+(tied.length>1?labs+' متعادلة، '+txC(top.n,c.N)+' لكل منها.':labs+'، '+txC(top.n,c.N)+' من الآراء.')+'</div>';
+ const acts=[];
+ if(rec){
+  h+='<div class="note"><b>أول شيء تسوونه'+(tied.length>1||rec.a!==top.a?' (لـ«'+esc(ASPECTS[rec.a].label)+'»)':'')+':</b> '+esc(planOf(rec,m))+'<div class="small">'+esc(rec.team)+' · الهدف '+pn(rec.kpi.base)+' ← '+pn(rec.kpi.target)+' · '+esc(whenTxt(rec,m))+'</div></div>';
+  h+='<div class="small">'+(m==='live'?'رتّبت التوصيات حسب الأولوية ثم سهولة التنفيذ الآن.':'رتّبت التوصيات حسب قوة الدليل وحجم الأثر.')+' النقاط المضيئة في الحقل هي الآراء اللي بُنيت عليها.</div>';
+  acts.push(A('اسمع الأصوات','ev',{id:cev(ASPECTS[rec.a].label+': ما أزعج الزوار',i=>vis(i)&&i.aspects.some(z=>z.a===rec.a&&z.p==='neg')),pri:true}));
+  acts.push(A('أضيفوها إلى الخطة','save',{key:rec.key}));
+ }else h+='<div class="small">ما فيه توصية بعد: التوصية تحتاج 5 شكاوى على الأقل من 3 مصادر مستقلة.</div>';
+ acts.push(A('اعرضوا الحقل','go',{v:'happened'}));
+ const a=rec?rec.a:top.a;
+ return {h:h+demoNote(),acts,steps:[stepsScope(),stepsData(),'رتّبت الشكاوى حسب عددها','اخترت أول إجراء من التوصيات'],after:()=>{if(typeof vfSelect==='function')vfSelect(a)}};
+}
 /* ---------- router ---------- */
+/* "what didn't they like" must reach complaints before the praise rule sees "عجب/حب" */
+const DISLIKEQ=/ما عجب|ما اعجب|ما حب|ما انبسط|مو عاجب|didn'?t like|disliked/;
+const SUGGEST=['وش أكثر ما أزعج الزوار؟','وش أعجب الزوار؟','وش أهم توصية؟','قارن بين المنصات'];
+const suggestBtns=()=>'<div class="chips" style="margin-top:8px">'+SUGGEST.map(q=>'<button class="chipb" type="button" data-act="chip" data-q="'+esc(q)+'">'+esc(q)+'</button>').join('')+'</div>';
 function route(t,ent){
  chatLast=t;
  const has=r=>r.test(t);
@@ -292,6 +313,7 @@ function route(t,ent){
  applyEnt(ent);
  const asp=ent.aspects;
  const REC=/توصي|اقتراح|اقترح|وش اسوي|ايش اسوي|ايش نسوي|وش نسوي|وش القرار|قرار|اجراء|ماذا نفعل|recommend|what should/;
+ if(!asp.length&&has(/مشكله|مشاكل|شكو|شكاوي|شتك|ازعج|اسوا|problem|complain/)&&has(/اسوي|نسوي|اول شي|اول خطوه|اجراء|افعل|اعمل|what should|first/))return firstStepAnswer();
  if(!asp.length&&!has(REC)&&(ent.plat||has(/منصه|منصات|سوشال|سوشل|كلمات مفتاحيه|كي ?ورد|keyword/)))return platformsAnswer(ent.plat);
  if(!asp.length&&has(/مشاعر|sentiment|محايد|نسبه الايجابي|نسبه السلبي|ايجابي وسلبي|سلبي وايجابي|توزيع الاراء|كم.*(?:ايجابي|سلبي)/))return sentimentAnswer();
  if(!asp.length&&has(/مواضيع|موضوع|topics|اكثر ما يذكر|اكثر ذكرا|الاكثر ذكرا|الاكثر تكرارا|وش يتكلمون|ايش يتكلمون|يتكلمون عن/))return topicsAnswer();
@@ -301,14 +323,15 @@ function route(t,ent){
  if(has(/فرص|فرصه|فكره|افكار|محتوي|opportunit|content idea/))return oppsAnswer();
  if(has(/دليل|ادله|اثبات|مقتطف|تعليقات|وش يقولون|ايش يقولون|شو يقولون|وش قالوا|امثله|evidence|quotes/))return evidenceAnswer(asp);
  if(has(/مراحل|مرحله|رحله|stage|journey/)&&!asp.length)return stagesAnswer();
- if(has(/نقاط القوه|احسن|افضل|ايجابي|مميز|يعجب|اعجب|strength|best/)&&!asp.length)return strengthsAnswer();
- if(has(/اسوا|اكبر مشكله|اهم مشكله|تحديات|شكاوي|مشاكل|مشكله|عوائق|ازعج|نقاط الالم|معاناه|pain|worst|problems|issues/)&&!asp.length)return worstAnswer();
+ if(has(DISLIKEQ)&&!asp.length)return worstAnswer();
+ if(has(/نقاط القوه|احسن|افضل|ايجابي|مميز|يعجب|اعجب|عجبهم|عجبه|عجبني|حبوا|حبو|يحبون|انبسط|استمتع|مدح|اشاد|strength|best|liked|loved|enjoy/)&&!asp.length)return strengthsAnswer();
+ if(has(/اسوا|اكبر مشكله|اهم مشكله|تحديات|شكاوي|شكوي|شتك|تذمر|تضايق|زعل|سلبيات|عيوب|مشاكل|مشكله|عوائق|ازعج|نقاط الالم|معاناه|pain|worst|problems|issues|complain/)&&!asp.length)return worstAnswer();
  if(asp.length){const bs=asp.slice(0,2).map(aspectBlock);return {h:weakNote()+bs.map(b=>b.h).join('<hr class="cl">')+demoNote(),acts:bs.flatMap(b=>b.acts).slice(0,5),steps:[stepsScope(),stepsData()].concat(bs[0].steps)}}
  if(ent.area)return areaAnswer(ent.area);
  if(has(/قارن|مقارنه|مقابل|السابق|الماضي|compare|vs/))return compareAnswer();
  if(has(/وش تغير|ايش تغير|شو تغير|تغير|الجديد|هذا الاسبوع|هالاسبوع|ملخص|وضع|وش صار|what changed|summary|overview/))return summaryAnswer();
  if(has(/موسم|فتره|يوم|ايام/)&&(ent.season||ent.period))return summaryAnswer();
- return {h:'ما فهمت طلبكم بدقة. أقدر أجاوب عن جانب (الانتظار، الزحام، الأسعار، الأكل…) أو منطقة أو موسم، وأعطيكم تقريرًا أو توصيات، وأقول لكم متوسط النجوم. جرّبوا أحد الاقتراحات تحت.',acts:[],steps:[]};
+ return {h:'<div>ما فهمت طلبكم بدقة. أقدر أجاوب عن جانب (الانتظار، الزحام، الأسعار، الأكل…) أو منطقة أو موسم، وأعطيكم تقريرًا أو توصيات، وأقول لكم متوسط النجوم. هل تقصدون أحد هذه الأسئلة؟</div>'+suggestBtns(),acts:[],steps:[]};
 }
 
 /* ---------- chat window ---------- */
