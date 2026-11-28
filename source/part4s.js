@@ -138,15 +138,18 @@ function orgTips(m){
 /* ---------- status, tabs, filters ---------- */
 function renderStatus(){
  const m=mode();
- $('status').innerHTML='<span class="evname">'+esc(S.settings.event)+'</span>'+(demoOn()?'<span class="demo-flag">بيانات ديمو</span>':'')+
-  '<span>المصادر: <b>'+srcTxt()+'</b></span><span>حالة الفعالية: '+chip(m==='live'?'قائمة الحين':'انتهت',m==='live'?'ok':'mut')+'</span>'+
-  (S.lastOk?'<span>آخر تحليل: <b>'+dAr(S.lastOk.slice(0,10))+'</b></span>':'');
- const bs=$('brandSub');if(bs)bs.textContent='وكيل لتحليل آراء الزوار لأي فعالية · فريق beyond limits';
+ $('status').innerHTML='<div class="evpick"><select id="evTop" aria-label="الفعالية الحالية">'+S.events.map(e=>'<option value="'+esc(e.id)+'"'+(e.id===S.eventId?' selected':'')+'>'+esc(e.name)+'</option>').join('')+'<option value="__new">+ فعالية جديدة…</option></select></div>'+
+  (demoOn()?'<span class="demo-flag">بيانات ديمو</span>':'')+
+  '<span>المصادر: <b>'+srcTxt()+'</b></span><span>'+chip(m==='live'?'قائمة الحين':'انتهت',m==='live'?'ok':'mut')+'</span>'+
+  (S.lastOk&&P.items.length?'<span>آخر تحليل: <b>'+dAr(S.lastOk.slice(0,10))+'</b></span>':'');
+ const bs=$('brandSub');if(bs)bs.textContent='لأي فعالية · فريق beyond limits';
 }
+const VIEWS=['overview','problem','voices','recs','happened','data'];
 function renderTabs(){
- document.querySelectorAll('#tabs .tab').forEach(b=>{const on=b.dataset.tab===S.ui.tab;b.classList.toggle('on',on);if(on)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current')});
- ['data','happened','recs'].forEach(t=>$('p-'+t).classList.toggle('on',t===S.ui.tab));
- $('filters').style.display=S.ui.tab==='data'?'none':'';
+ if(!VIEWS.includes(S.ui.tab))S.ui.tab='overview';
+ document.querySelectorAll('#tabs .tab').forEach(b=>{const on=b.dataset.tab===S.ui.tab;b.classList.toggle('on',on);if(on)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
+ VIEWS.forEach(t=>$('p-'+t).classList.toggle('on',t===S.ui.tab));
+ $('filters').style.display=S.ui.tab==='data'||!P.items.length?'none':'';
 }
 function renderFilters(){
  if(!$('fSeason'))$('filters').innerHTML='<label class="fld">الموسم<select id="fSeason"></select></label><label class="fld">الفترة<select id="fPeriod"></select></label><label class="fld">المصدر<select id="fPlat"></select></label><label class="fld" id="fAreaL">المنطقة<select id="fArea"></select></label><span class="small" id="fNote"></span>';
@@ -460,4 +463,149 @@ function renderDrawer(){
   (t.length?'<h4>أمثلة إضافية (بحث موجّه)</h4><div class="note">هذه الأمثلة تشرح الأسباب ولا تدخل في حساب النسب، لأن البحث الموجّه يضخّم الموضوع الذي نبحث عنه.</div>'+t.slice(0,D.t).map(itemCard).join('')+(t.length>D.t?'<button class="btn sm" type="button" data-act="moreEv" data-w="t">عرض المزيد</button>':''):'')+'</div>';
  dr.classList.add('on');$('scrim').classList.add('on');
 }
-function renderAll(){computeView();renderStatus();renderTabs();renderFilters();renderData();renderHappened();renderRecs();renderDrawer();renderChatScope()}
+
+/* ================= redesigned screens: overview -> problem details -> visitor voices ================= */
+const VS0=()=>({a:'all',stage:'all',sent:'all',plat:'all',q:'',n:20});
+const hashSort=list=>list.slice().sort((p,q)=>hash(p.id)<hash(q.id)?-1:1);
+const negOf=a=>i=>vis(i)&&i.aspects.some(z=>z.a===a&&z.p==='neg');
+function startBox(){
+ return '<div class="ptitle"><div><h2>'+esc(S.settings.event)+'</h2><p>فعالية بلا بيانات بعد</p></div></div>'+
+  '<div class="startbox"><h3>أضف بيانات الفعالية</h3><p class="small">ما نعرض نتائج قبل ما ترفعون آراء الزوار، ولا نضيف أي بيانات من عندنا.</p><div class="steps3">'+
+  '<div class="done"><i>✓</i><div><b>اخترتم الفعالية</b><div class="small">«'+esc(S.settings.event)+'»</div></div></div>'+
+  '<div class="now"><i>٢</i><div><b>ارفعوا ملف التعليقات أو الصقوها</b><div class="small">CSV أو JSON أو TXT من قوقل ماب أو تيك توك أو X</div></div></div>'+
+  '<div><i>٣</i><div><b>نحلل ونعرض أولوية اليوم</b><div class="small">مع التعليقات اللي بُنيت عليها كل نتيجة</div></div></div></div>'+
+  '<div class="row2"><button class="btn pri" type="button" data-act="tab" data-v="data">أضف بيانات الفعالية</button></div></div>';
+}
+function tieInfo(a){
+ const iss=issues(),me=iss.find(o=>o.a===a);if(!me)return '';
+ const same=iss.filter(o=>o.a!==a&&o.n===me.n),more=iss.filter(o=>o.a!==a&&o.n>me.n);
+ if(more.length)return 'أكثر شكوى عددًا: '+more.map(o=>ASPECTS[o.a].label+' ('+fmt(o.n)+')').join('، ');
+ if(same.length)return 'متعادل مع '+same.map(o=>ASPECTS[o.a].label).join(' و');
+ return '';
+}
+function miniField(a){
+ const lit=a?negOf(a):()=>false;
+ return '<div class="minifield" aria-hidden="true">'+hashSort(V.items).map(i=>'<i class="'+(!opinion(i)?'h':opinion(i)&&lit(i)?'on':'')+'"></i>').join('')+'</div>';
+}
+function overviewPick(){
+ const m=mode(),rec=ranked(m)[0],iss=issues();
+ return {rec,a:rec?rec.a:(iss[0]?iss[0].a:null)};
+}
+function renderOverview(){
+ const el=$('p-overview');if(!el)return;
+ if(!P.items.length){el.innerHTML=startBox();return}
+ const c=V.cur,m=mode(),iss=issues(),gd=goods(),pk=overviewPick(),a=pk.a,rec=pk.rec;
+ const kp=(l,v,s)=>'<div class="kpi"><span>'+l+'</span><b>'+v+'</b><small>'+s+'</small></div>';
+ let h='<div class="ptitle"><div><h2>نظرة عامة</h2><p>'+esc(scopeTxt())+'</p></div>'+(c.N<30?chip('عينة صغيرة · '+rAr(c.N),'warn'):chip('عينة '+(c.N>=100?'جيدة':'متوسطة')+' · '+rAr(c.N),c.N>=100?'ok':'warn'))+'</div>';
+ h+='<div class="kpis">'+kp('آراء الزوار',fmt(c.N),'من '+fmt(V.items.length)+' مادة في النطاق')+kp('اشتكوا من شيء',c.N?pc(c.negAny/c.N):'—',fmt(c.negAny)+' من '+fmt(c.N))+
+  kp('مشاعر إيجابية',c.sent.n?pc(c.sent.pos/c.sent.n):'—','من '+fmt(c.sent.n)+' مادة لها شعور')+kp('توصيات جاهزة',fmt(V.recs.length),'شكوى تكررت 5 مرات من 3 مصادر')+'</div>';
+ let pr;
+ if(a){
+  const x=c.A[a],lab=ASPECTS[a].label,tie=tieInfo(a);
+  pr='<div class="prio"><span class="eyebrow">أولوية اليوم</span><h3>'+esc(lab)+'</h3>'+
+   '<p class="lead"><b>'+fmt(x.neg)+'</b> '+(x.neg===1?'رأي':'آراء')+' من '+fmt(c.N)+' تشتكي من '+esc(lab)+'، من '+esc(mq(x.negClips.size))+(tie?' · '+esc(tie):'')+'</p>'+miniField(a);
+  if(rec){pr+='<div class="firstact"><span class="lb">أول إجراء مقترح</span><b>'+esc(planOf(rec,m))+'</b><div class="facts"><span>'+esc(rec.team)+'</span><span>الهدف '+pn(rec.kpi.base)+' ← '+pn(rec.kpi.target)+'</span><span>'+esc(whenTxt(rec,m))+'</span></div></div>'+
+   '<p class="small">'+(m==='live'?'اخترناها لأنها الأعلى أولوية ثم الأسهل تنفيذًا الآن بين الشكاوى المتكررة.':'اخترناها لأنها الأقوى دليلًا وأثرًا.')+'</p>'}
+  else pr+='<div class="firstact" style="border-color:rgba(245,194,107,.4);background:rgba(245,194,107,.07)"><span class="lb" style="color:var(--warn)">ما فيه توصية بعد</span><span class="small">التوصية تحتاج 5 شكاوى على الأقل من 3 مصادر مستقلة. عندكم '+fmt(x.neg)+'.</span></div>';
+  pr+='<div class="row2"><button class="btn coral" type="button" data-act="openProb" data-a="'+a+'">عرض التفاصيل</button><button class="btn" type="button" data-act="openVoices" data-a="'+a+'" data-sent="neg">التعليقات الداعمة</button></div></div>';
+ }else pr='<div class="prio"><span class="eyebrow">أولوية اليوم</span><h3 style="font-size:24px">ما فيه شكوى تتكرر بوضوح</h3><p class="small">نعرض الأولوية إذا تكررت شكوى 3 مرات على الأقل من مصدرين مستقلين.</p><div class="row2"><button class="btn" type="button" data-act="tab" data-v="voices">صوت الزوار</button></div></div>';
+ const top=iss[0];
+ const brief='<div class="brief"><h3><svg viewBox="0 0 24 24" aria-hidden="true" style="width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8"><path d="M12 4l1.8 4.2L18 10l-4.2 1.8L12 16l-1.8-4.2L6 10l4.2-1.8z"/></svg>موجز المستشار</h3>'+
+  '<p>قرأت '+fmt(V.items.length)+' مادة، منها '+rAr(c.N)+' من زوار «'+esc(S.settings.event)+'».</p>'+
+  (top?'<p>أكثر شكوى: '+esc(ASPECTS[top.a].label)+' ('+fmt(top.n)+')'+(iss[1]&&iss[1].n===top.n?' بالتساوي مع '+esc(ASPECTS[iss[1].a].label):'')+'.</p>':'')+
+  (gd[0]?'<p>أكثر ما أعجبهم: '+esc(ASPECTS[gd[0].a].label)+' ('+fmt(gd[0].n)+').</p>':'')+
+  (c.N<30?'<p class="small" style="color:var(--warn)">العينة صغيرة، فالأرقام اتجاه مبدئي.</p>':'')+
+  (demoOn()?'<p class="small">البيانات مجمّعة مسبقًا وليست اتصالًا مباشرًا.</p>':'')+
+  '<div class="row2"><button class="btn" type="button" data-act="openChat">اسأل المستشار</button></div></div>';
+ h+='<div class="ov">'+pr+'<div style="display:grid;gap:16px">'+brief+'</div></div>';
+ const others=iss.filter(o=>o.a!==a);
+ if(others.length)h+='<div class="decide"><h3>مشاكل أخرى تستحق القرار</h3>'+others.map(o=>{const r=V.recs.find(z=>z.a===o.a);
+  return '<div class="dz"><div><b>'+esc(ASPECTS[o.a].label)+'</b> <span class="small">· '+fmt(o.n)+' من '+fmt(c.N)+' · '+esc(STG[ASPECTS[o.a].stage].name)+'</span> '+(r?chip('توصية جاهزة','ok'):chip('تحتاج بيانات أكثر','mut'))+'</div><button class="btn sm" type="button" data-act="openProb" data-a="'+o.a+'">عرض التفاصيل</button></div>'}).join('')+'</div>';
+ h+='<div class="sec-h"><h3>رحلة الزائر</h3><span class="small">اضغطوا على مرحلة لعرض تعليقاتها</span></div><div class="journey">'+V.stages.map(s=>{
+  const t=s.pos+s.neg,lab=STAT_AR[s.status]||s.status;
+  return '<button class="stage" type="button" data-act="openStage" data-s="'+s.st.id+'"><span class="sn">'+esc(s.st.name)+'</span>'+chip(lab,s.cls)+
+   '<span class="sb2" aria-hidden="true"><i style="width:'+(t?Math.round(s.pos/t*100):0)+'%;background:var(--mint)"></i><i style="width:'+(t?Math.round(s.neg/t*100):0)+'%;background:var(--coral)"></i></span>'+
+   '<span class="cnt">'+(s.st.id==='leave'?'يرغبون بالعودة '+s.pos+' · لا يرغبون '+s.neg:(t?'أعجبهم '+s.pos+' · أزعجهم '+s.neg:'لا آراء كافية'))+(s.qClips?' · أسئلة '+s.qs:'')+'</span><span class="go">عرض النتائج ←</span></button>'}).join('')+'</div>';
+ el.innerHTML=h;
+}
+function probSel(){
+ const iss=issues();let a=S.ui.prob;
+ if(!a||!iss.some(o=>o.a===a))a=overviewPick().a;
+ return a;
+}
+function renderProblem(){
+ const el=$('p-problem');if(!el)return;
+ if(!P.items.length){el.innerHTML=startBox();return}
+ const c=V.cur,m=mode(),iss=issues(),a=probSel();
+ if(!a){el.innerHTML='<div class="ptitle"><div><h2>تفاصيل المشكلة</h2><p>'+esc(scopeTxt())+'</p></div></div><div class="startbox"><h3>ما فيه شكوى تتكرر بما يكفي</h3><p class="small">نعرض التفاصيل إذا تكررت شكوى 3 مرات على الأقل من مصدرين مستقلين. راجعوا صوت الزوار أو أضيفوا بيانات.</p><div class="row2"><button class="btn" type="button" data-act="tab" data-v="voices">صوت الزوار</button><button class="btn" type="button" data-act="tab" data-v="data">إضافة بيانات</button></div></div>';return}
+ const x=c.A[a],lab=ASPECTS[a].label,rec=V.recs.find(r=>r.a===a),tie=tieInfo(a);
+ let h='<div class="ptitle"><div><button class="btn sm" type="button" data-act="tab" data-v="overview">→ النظرة العامة</button><h2 style="margin-top:8px">'+esc(lab)+'</h2><p>'+esc(STG[ASPECTS[a].stage].name)+' · '+esc(scopeTxt())+'</p></div></div>';
+ if(iss.length>1)h+='<div class="vf-chips" role="group" aria-label="مشاكل أخرى" style="margin-bottom:14px">'+iss.map(o=>'<button type="button" data-act="openProb" data-a="'+o.a+'" aria-pressed="'+(o.a===a)+'">'+esc(ASPECTS[o.a].label)+' '+fmt(o.n)+'</button>').join('')+'</div>';
+ /* 1. what happened */
+ const byP={};x.negIds.forEach(id=>{const it=P.byId[id];if(it){const k=it.platform||'other';byP[k]=(byP[k]||0)+1}});
+ const mx=Math.max(1,...Object.values(byP));
+ const ta=V.ui.area==='all'?topAreaFor(a):null;
+ const what='<div class="pcard"><h3><span class="num">١</span>وش حصل؟</h3><div class="bignum">'+fmt(x.neg)+' <small>'+(x.neg===1?'رأي':'آراء')+' من '+fmt(c.N)+' تشتكي من '+esc(lab)+'</small></div>'+
+  '<div class="facts"><span>'+pc(c.N?x.neg/c.N:0)+' من الآراء</span><span>'+esc(mq(x.negClips.size))+'</span>'+(x.pos?'<span>وأشاد به '+fmt(x.pos)+'</span>':'')+'</div>'+
+  (tie?'<p class="small" style="color:var(--warn)">'+esc(tie)+'</p>':'')+
+  '<div class="platsplit">'+PLATS.filter(k=>byP[k]).map(k=>'<div><span>'+esc(PLAT[k])+'</span><i style="width:'+Math.round(byP[k]/mx*100)+'%"></i><b>'+byP[k]+'</b></div>').join('')+'</div>'+
+  (ta?'<p class="small">أكثر منطقة فيها شكوى: '+esc(areaName(ta.id))+' ('+ta.n+' من '+ta.t+').</p>':'')+
+  '<p class="small">'+esc(cmpPhrase(sigOf(a)))+'</p></div>';
+ /* 3. what to do */
+ let act='<div class="pcard act"><h3><span class="num">٣</span>وش نسوي؟</h3>';
+ if(rec){const saved=S.saved.find(z=>z.key===rec.key);
+  act+='<div class="firstact"><span class="lb">'+(m==='live'?'تحسين تقدرون تسوونه الحين':'توصية للموسم القادم')+'</span><b>'+esc(planOf(rec,m))+'</b><div class="facts"><span>'+esc(rec.team)+'</span><span>'+esc(whenTxt(rec,m))+'</span><span>'+esc(prioTxt(rec,m))+'</span></div></div>'+
+   '<div><span class="small">كيف نقيس الأثر</span><div class="kpiline">'+pn(rec.kpi.base)+' ← '+pn(rec.kpi.target)+'</div><p class="small">'+esc(kpiTxt(rec,m))+'</p></div>'+
+   ((PLAN[a]||{}).verify?'<p class="small"><b>تأكدوا ميدانيًا:</b> '+esc(PLAN[a].verify)+'</p>':'')+
+   '<div class="row2"><button class="btn'+(saved?' on':' pri')+'" type="button" data-act="saveRec" data-key="'+esc(rec.key)+'">'+(saved?'في الخطة ✓':'أضيفوها للخطة')+'</button><button class="btn" type="button" data-act="tab" data-v="recs">كل التوصيات</button></div>';
+ }else act+='<p>ما فيه توصية بعد لهذه الشكوى.</p><p class="small">التوصية تظهر إذا تكررت الشكوى 5 مرات على الأقل من 3 مصادر مستقلة. عندكم '+fmt(x.neg)+(x.neg===1?' شكوى':' شكاوى')+' من '+esc(mq(x.negClips.size))+'.</p><div class="row2"><button class="btn" type="button" data-act="tab" data-v="data">إضافة بيانات</button></div>';
+ act+='</div>';
+ /* 2. how we know */
+ const sup=V.items.filter(negOf(a)).sort((p,q)=>(q.likes-p.likes)||(q.publishedAt||'').localeCompare(p.publishedAt||''));
+ const lit=negOf(a);
+ const how='<div class="pcard how wide"><h3><span class="num">٢</span>كيف عرفنا؟</h3>'+
+  '<p>صنّفنا '+rAr(c.N)+' بقواعد لغوية تفهم اللهجة السعودية والإنجليزية، وليس بنموذج لغة. '+fmt(x.neg)+' منها ذكرت '+esc(lab)+' بصيغة سلبية، وهي النقاط المضيئة. كل نقطة رأي زائر، واضغطوا أي نقطة لقراءته.</p>'+
+  '<div class="pfield">'+hashSort(V.items).map(i=>'<button type="button" data-act="vfDot" data-id="'+esc(i.id)+'" class="'+(!opinion(i)?'h':lit(i)?'on':'')+'" aria-label="'+(opinion(i)?'رأي زائر':'مادة لا تُحسب')+'"></button>').join('')+'</div>'+
+  '<h4 style="margin-top:4px">من التعليقات الداعمة</h4><div class="vlist" style="margin-top:0">'+sup.slice(0,4).map(itemCard).join('')+'</div>'+
+  (sup.length?'<div class="row2"><button class="btn" type="button" data-act="openVoices" data-a="'+a+'" data-sent="neg">كل التعليقات الداعمة ('+fmt(sup.length)+')</button></div>':'')+
+  '<div class="video"><b>رصد الفيديو:</b> لا توجد مؤشرات فيديو لهذه الفعالية. تحليل الفيديو المسجّل قيد التطوير في فرع منفصل ولم يُدمج بعد، لذلك لا نعرض أي أرقام منه هنا.</div></div>';
+ el.innerHTML=h+'<div class="pd">'+what+act+how+'</div>';
+}
+function vsState(){if(!S.ui.vs||typeof S.ui.vs!=='object')S.ui.vs=VS0();return S.ui.vs}
+function vsFn(){
+ const v=vsState(),q=norm(v.q||''),st=v.stage!=='all'?STG[v.stage]:null;
+ return i=>{
+  if(v.plat!=='all'&&i.platform!==v.plat)return false;
+  if(q&&!norm(i.text).includes(q))return false;
+  if(v.a!=='all'&&!i.aspects.some(x=>x.a===v.a&&(v.sent==='all'||x.p===v.sent)))return false;
+  if(v.a==='all'&&v.sent!=='all'&&i.sent!==v.sent)return false;
+  if(st){if(st.id==='leave'){if(!(i.ret||i.noret))return false}else if(!i.aspects.some(x=>st.asp.includes(x.a)&&(v.sent==='all'||x.p===v.sent)))return false}
+  return true;
+ };
+}
+function renderVoiceList(){
+ const box=$('vlist');if(!box)return;
+ const v=vsState(),list=V.items.filter(vsFn()).sort((p,q)=>(q.likes-p.likes)||(q.publishedAt||'').localeCompare(p.publishedAt||''));
+ const n=list.length;
+ $('vcount').textContent=(n===1?'تعليق واحد':n===2?'تعليقان':n>=3&&n<=10?n+' تعليقات':fmt(n)+' تعليقًا')+' يطابق الفلاتر';
+ box.innerHTML=list.length?list.slice(0,v.n).map(itemCard).join('')+(list.length>v.n?'<button class="btn" type="button" data-act="vsMore">عرض المزيد</button>':''):'<div class="empty">ما فيه تعليقات تطابق هذه الفلاتر.</div>';
+}
+function renderVoices(){
+ const el=$('p-voices');if(!el)return;
+ if(!P.items.length){el.innerHTML=startBox();return}
+ const v=vsState(),cnt=srcCounts();
+ const opt=(val,l,cur)=>'<option value="'+val+'"'+(val===cur?' selected':'')+'>'+esc(l)+'</option>';
+ const stg=v.stage!=='all'?V.stages.find(s=>s.st.id===v.stage):null;
+ el.innerHTML='<div class="ptitle"><div><h2>صوت الزوار</h2><p>كل تعليق كما كتبه الزائر، مع مصدره وتصنيفه. البيانات مجمّعة وليست اتصالًا مباشرًا.</p></div><button class="btn sm" type="button" data-act="vsReset">مسح الفلاتر</button></div>'+
+  '<div class="srcs">'+PLATS.filter(k=>cnt[k]).map(k=>'<span><b>'+fmt(cnt[k])+'</b> '+esc(PLAT[k])+' <span class="small">· '+esc(PLAT_NOTE[k])+'</span></span>').join('')+'</div>'+
+  (stg?'<div class="note">مرحلة «'+esc(stg.st.name)+'»: '+esc(STAT_AR[stg.status]||stg.status)+' · '+(stg.st.id==='leave'?'يرغبون بالعودة '+stg.pos+' · لا يرغبون '+stg.neg:'أعجبهم '+stg.pos+' · أزعجهم '+stg.neg)+'</div>':'')+
+  '<div class="vfilters">'+
+   '<label>الجانب<select id="vsA">'+opt('all','كل الجوانب',v.a)+AKEYS.map(k=>opt(k,ASPECTS[k].label,v.a)).join('')+'</select></label>'+
+   '<label>مرحلة الرحلة<select id="vsStage">'+opt('all','كل المراحل',v.stage)+STAGES.map(s=>opt(s.id,s.name,v.stage)).join('')+'</select></label>'+
+   '<label>الشعور<select id="vsSent">'+opt('all','الكل',v.sent)+opt('neg','سلبي',v.sent)+opt('pos','إيجابي',v.sent)+opt('neu','محايد',v.sent)+'</select></label>'+
+   '<label>المصدر<select id="vsPlat">'+opt('all','كل المصادر',v.plat)+PLATS.filter(k=>cnt[k]).map(k=>opt(k,PLAT[k],v.plat)).join('')+'</select></label>'+
+   '<label>بحث في النص<input id="vsQ" type="search" value="'+esc(v.q||'')+'" placeholder="مثل: الطابور"></label></div>'+
+  '<div class="small" id="vcount" style="margin-top:10px"></div><div class="vlist" id="vlist"></div>';
+ renderVoiceList();
+}
+function renderAll(){computeView();renderStatus();renderTabs();renderFilters();renderData();renderOverview();renderProblem();renderVoices();renderHappened();renderRecs();renderDrawer();renderChatScope()}

@@ -173,7 +173,7 @@ function doImport(){
  S.lastOk=nowStr()+' '+hhmm();S.lastErr=null;
  const after=snap();S.snaps.push(after);if(S.snaps.length>12)S.snaps.shift();
  computeView();S.lastDiff=wasImport?buildDiff(before,after,rb):null;
- S.ui.tab='happened';persist();renderAll();window.scrollTo(0,0);
+ S.ui.tab='overview';persist();renderAll();window.scrollTo(0,0);
  toast('تم التحليل: '+added+' جديد، '+same+' موجود سابقًا. المقبول بعد الفلاتر '+fmt(P.log.kept)+' من '+fmt(P.log.total)+'.');
 }
 
@@ -556,7 +556,9 @@ function wire(){
  document.addEventListener('change',e=>{
   const t=e.target;
   if(t.id==='fSeason'||t.id==='fPeriod'||t.id==='fArea'||t.id==='fPlat'){S.ui.season=$('fSeason').value;S.ui.period=$('fPeriod').value;S.ui.area=$('fArea').value;S.ui.plat=$('fPlat').value;persist();renderAll();return}
-  if(t.id==='evSel'){const id=t.value;if(id&&id!==S.eventId){saveEv();S.eventId=id;loadEv(id);D=null;PEND=[];UP.newEv=false;ensureSeasons();processAll();persist();renderAll();window.scrollTo(0,0);toast('الفعالية الآن: '+S.settings.event+'.')}return}
+  if(t.id==='evTop'&&t.value==='__new'){t.value=S.eventId;S.ui.tab='data';UP.newEv=true;persist();renderAll();window.scrollTo(0,0);setTimeout(()=>{const n=$('evName');if(n)n.focus()},60);return}
+  if(/^vs(A|Stage|Sent|Plat)$/.test(t.id)){const v=vsState(),k={vsA:'a',vsStage:'stage',vsSent:'sent',vsPlat:'plat'}[t.id];v[k]=t.value;v.n=20;persist();renderVoiceList();return}
+  if(t.id==='evSel'||t.id==='evTop'){const id=t.value;if(id&&id!==S.eventId){saveEv();S.eventId=id;loadEv(id);D=null;PEND=[];UP.newEv=false;ensureSeasons();processAll();persist();renderAll();window.scrollTo(0,0);toast('الفعالية الآن: '+S.settings.event+'.')}return}
   if(t.id==='fFile'){const fl=Array.from(t.files||[]);t.value='';addFiles(fl);return}
   if(t.id==='upSeason'){UP.season=t.value;renderData();return}
   if(t.id==='upFilter'){UP.filter=t.checked;return}
@@ -584,3 +586,12 @@ ACT.unfixCls=()=>{
  if(f.prev)S.overrides[f.id]=f.prev;else delete S.overrides[f.id];
  persist();processAll();renderAll();toast('تراجعنا عن آخر تصحيح.');
 };
+
+/* ---------- redesigned navigation ---------- */
+const goView=v=>{S.ui.tab=v;persist();renderTabs();window.scrollTo({top:0,behavior:'smooth'})};
+ACT.openProb=t=>{S.ui.prob=t.dataset.a||null;renderProblem();goView('problem')};
+ACT.openVoices=t=>{S.ui.vs=Object.assign(VS0(),{a:t.dataset.a||'all',sent:t.dataset.sent||'all',stage:t.dataset.s||'all'});renderVoices();goView('voices')};
+ACT.openStage=t=>{S.ui.vs=Object.assign(VS0(),{stage:t.dataset.s});renderVoices();goView('voices')};
+ACT.vsMore=()=>{vsState().n+=20;renderVoiceList()};
+ACT.vsReset=()=>{S.ui.vs=VS0();persist();renderVoices()};
+document.addEventListener('input',e=>{if(e.target.id==='vsQ'){vsState().q=e.target.value;vsState().n=20;renderVoiceList()}});

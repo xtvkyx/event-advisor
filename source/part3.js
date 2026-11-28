@@ -5,7 +5,7 @@ const EX_LESSON={id:'ex1',demo:true,aspect:'wait',problem:'الانتظار عن
  action:'حجز مواعيد دخول للتجربة وعرض وقت الانتظار على شاشة المدخل.',context:'مثال توضيحي تجريبي: فعالية موسمية، منطقة جديدة، تجربة واحدة بطابور طويل.',
  result:'لم تُسجَّل نتيجة بعد. هذا المثال يوضح شكل الدرس المحفوظ فقط.'};
 const EV_KEYS=['settings','imported','importMeta','saved','ideas','lessons','reviewed','overrides','snaps','lastOk','ui','sources','builtin'];
-const UI0=()=>({season:'كل الفترات',period:'all',area:'all',plat:'all',metric:'negAny',tab:'happened',status:'auto'});
+const UI0=()=>({season:'كل الفترات',period:'all',area:'all',plat:'all',metric:'negAny',tab:'overview',status:'auto',prob:null,vs:null});
 let S={settings:clone(DEF),builtin:true,batch:1,imported:[],importMeta:null,saved:[],ideas:[],lessons:[clone(EX_LESSON)],reviewed:{},overrides:{},sources:[],
  events:[{id:'blvd',name:'بوليفارد وورلد'}],eventId:'blvd',evStore:{},
  snaps:[],lastOk:null,lastErr:null,simFail:false,lastDiff:null,runLog:[],ui:UI0()};

@@ -228,23 +228,147 @@ body.pv-open{overflow:hidden}
 .vf-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .btn.coral{background:var(--coral);border-color:var(--coral);color:#1A0E08;font-weight:700}
 .fixb{cursor:pointer;font-size:12px;border-radius:8px;border:1px solid var(--warn);background:transparent;color:var(--warn);padding:1px 9px}
+
+.chat-fab{display:none!important} /* advisor is reached from the sidebar, bottom bar and header */
+/* ---------- app shell: sidebar (desktop, on the right in RTL) / bottom bar (phone) ---------- */
+.shell{display:grid;grid-template-columns:232px minmax(0,1fr);gap:28px;max-width:1320px;margin:0 auto}
+.main{min-width:0;padding-top:18px}
+.side{position:sticky;top:env(safe-area-inset-top,0px);height:100vh;height:100dvh;display:flex;flex-direction:column;gap:4px;padding:20px 0;overflow-y:auto}
+.side .brand{padding:0 6px 18px}
+.side .brand h1{font-size:18px}
+.side .brand p{font-size:12px}
+.side .tab,.side .tabx{cursor:pointer;display:flex;gap:12px;align-items:center;border:0;background:transparent;color:var(--mut);border-radius:12px;padding:10px 12px;text-align:right;font-size:14.5px;position:relative}
+.side .tab:hover,.side .tabx:hover{background:rgba(255,255,255,.05);color:var(--fg)}
+.side .tab.on{background:rgba(255,255,255,.08);color:var(--fg);font-weight:600}
+.side .tab.on::before{content:"";position:absolute;right:-1px;top:10px;bottom:10px;width:3px;border-radius:3px;background:var(--coral)}
+.side svg,.btn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.side .tabx{margin-top:auto;color:var(--mint)}
+.btn{display:inline-flex;gap:6px;align-items:center;justify-content:center}
+.top{padding:0 0 10px;align-items:flex-start}
+.evbar{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font-size:13px;color:var(--mut);min-width:0}
+.evpick{display:flex;gap:8px;align-items:center}
+.evpick select{font:700 18px var(--fh);background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:12px;padding:6px 12px;color:var(--fg);max-width:260px}
+.evbar b{color:var(--fg);font-weight:500}
+.ptitle{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.ptitle h2{font-size:clamp(22px,3vw,28px);font-weight:800}
+.ptitle p{color:var(--mut);font-size:14px}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px 16px;display:grid;gap:2px}
+.kpi span{font-size:12.5px;color:var(--mut)}
+.kpi b{font:800 28px var(--fh);font-variant-numeric:tabular-nums}
+.kpi small{font-size:12px;color:var(--mut)}
+.ov{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;margin-top:16px;align-items:start}
+.prio{background:linear-gradient(155deg,#2A2140 0%,#1B2546 45%,#141C36 100%);border:1px solid rgba(255,122,92,.35);border-radius:20px;padding:20px;display:grid;gap:12px}
+.eyebrow{font-size:12.5px;font-weight:700;color:var(--coral);letter-spacing:.02em}
+.prio h3{font-size:clamp(26px,3.6vw,36px);font-weight:800;line-height:1.25}
+.prio .lead{color:var(--fg);font-size:15px}
+.prio .lead b{color:var(--coral);font-family:var(--fh)}
+.firstact{background:rgba(111,214,168,.09);border:1px solid rgba(111,214,168,.3);border-radius:14px;padding:12px 14px;display:grid;gap:4px}
+.firstact .lb{font-size:12px;color:var(--mint);font-weight:700}
+.firstact b{font:700 16.5px/1.55 var(--fh)}
+.facts{display:flex;gap:6px;flex-wrap:wrap}
+.facts span{font-size:12.5px;background:rgba(255,255,255,.07);border-radius:999px;padding:2px 10px;white-space:nowrap}
+.row2{display:flex;gap:8px;flex-wrap:wrap}
+.minifield{display:grid;grid-template-columns:repeat(40,minmax(0,1fr));gap:3px;direction:ltr}
+.minifield i{aspect-ratio:1;border-radius:50%;background:var(--dot)}
+.minifield i.on{background:var(--coral);box-shadow:0 0 6px rgba(255,122,92,.6)}
+.minifield i.h{background:transparent;box-shadow:inset 0 0 0 1px var(--hollow)}
+.brief{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:18px;display:grid;gap:10px}
+.brief h3{font-size:16px;display:flex;gap:8px;align-items:center;color:var(--mint)}
+.brief p{font-size:14.5px}
+.decide{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:8px 18px;margin-top:16px}
+.decide h3{font-size:16px;padding:10px 0 4px}
+.dz{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;border-top:1px solid var(--line);padding:12px 0}
+.dz b{font-family:var(--fh)}
+.journey{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-top:10px}
+.stage{cursor:pointer;text-align:right;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;display:grid;gap:8px;align-content:start;min-height:150px}
+.stage:hover{border-color:var(--mint)}
+.stage .sn{font:700 15px var(--fh)}
+.stage .sb2{height:6px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden;display:flex}
+.stage .sb2 i{display:block;height:100%}
+.stage .cnt{font-size:12.5px;color:var(--mut)}
+.stage .go{font-size:12.5px;color:var(--mint);margin-top:auto}
+.sec-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-top:22px}
+.sec-h h3{font-size:18px}
+/* problem detail */
+.pd{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:6px}
+.pd .wide{grid-column:1/-1}
+.pcard{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:18px;display:grid;gap:12px;align-content:start;min-width:0}
+.pcard>h3{display:flex;gap:10px;align-items:center;font-size:17px}
+.pcard>h3 .num{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:13px;background:var(--coral);color:#1A0E08;flex:none}
+.pcard.how>h3 .num{background:var(--warn)}
+.pcard.act>h3 .num{background:var(--mint);color:#06241A}
+.bignum{font:800 46px/1 var(--fh);color:var(--coral)}
+.bignum small{font:500 14px var(--fb);color:var(--mut)}
+.platsplit{display:grid;gap:6px}
+.platsplit div{display:grid;grid-template-columns:90px 1fr 30px;gap:8px;align-items:center;font-size:13px}
+.platsplit i{display:block;height:8px;border-radius:4px;background:var(--coral)}
+.video{border:1px dashed rgba(245,194,107,.45);border-radius:14px;padding:12px 14px;font-size:13.5px;color:#F7DDB0;background:rgba(245,194,107,.06)}
+.pfield{display:grid;grid-template-columns:repeat(30,minmax(0,1fr));gap:4px;direction:ltr}
+.pfield button{all:unset;cursor:pointer;aspect-ratio:1;border-radius:50%;background:var(--dot)}
+.pfield button.h{background:transparent;box-shadow:inset 0 0 0 1.5px var(--hollow)}
+.pfield button.on{background:var(--coral);box-shadow:0 0 10px rgba(255,122,92,.55);transform:scale(1.35)}
+.pfield button:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
+.kpiline{font:800 30px var(--fh);font-variant-numeric:tabular-nums}
+/* voices */
+.vfilters{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:12px 14px}
+.vfilters label{display:grid;gap:4px;font-size:12.5px;color:var(--mut);flex:1 1 150px;min-width:0}
+.vfilters select,.vfilters input{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:10px;padding:7px 10px;color:var(--fg);width:100%}
+.srcs{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.srcs span{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px 12px;font-size:13px}
+.srcs b{font-family:var(--fh)}
+.vlist{display:grid;gap:10px;margin-top:12px}
+.vlist .ev{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.startbox{background:var(--panel);border:1px dashed rgba(111,214,168,.5);border-radius:20px;padding:22px;display:grid;gap:14px;max-width:720px}
+.steps3{display:grid;gap:10px}
+.steps3 div{display:flex;gap:12px;align-items:flex-start}
+.steps3 i{font-style:normal;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font:700 13px var(--fh);background:rgba(255,255,255,.08);flex:none}
+.steps3 .done i{background:var(--mint);color:#06241A}
+.steps3 .now i{background:var(--coral);color:#1A0E08}
+@media (max-width:1100px){.journey{grid-template-columns:repeat(3,minmax(0,1fr))}.ov{grid-template-columns:1fr}}
+@media (max-width:900px){
+ .shell{grid-template-columns:1fr;gap:0}
+ body{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+ .side{position:fixed;inset:auto 0 0 0;height:auto;flex-direction:row;gap:0;justify-content:space-around;padding:6px max(6px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(6px,env(safe-area-inset-left,0px));background:#0F1630;border-top:1px solid var(--line);z-index:58;overflow:visible}
+ .side .brand,.side .tab[data-tab="recs"],.side .tab[data-tab="happened"]{display:none}
+ .side .tab,.side .tabx{flex-direction:column;gap:3px;font-size:11px;padding:6px 4px;min-height:52px;min-width:56px;flex:1;justify-content:center;text-align:center;margin:0}
+ .side .tab.on::before{top:-6px;bottom:auto;right:25%;left:25%;width:auto;height:3px}
+ .chat-fab{display:none}
+ .toast{bottom:calc(92px + env(safe-area-inset-bottom,0px))}
+ .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .pd{grid-template-columns:1fr}
+ .journey{grid-template-columns:1fr}
+ .stage{min-height:0}
+ .minifield{grid-template-columns:repeat(25,minmax(0,1fr))}
+ .pfield{grid-template-columns:repeat(18,minmax(0,1fr))}
+ .hbtns .btn span{display:none}
+}
 </style>
 
-<div class="wrap" id="app" dir="rtl" lang="ar">
-  <header class="top">
+<div class="shell" id="app" dir="rtl" lang="ar">
+  <nav class="side" id="tabs" aria-label="التنقل">
     <div class="brand"><div class="logo">م</div><div><h1>مستشار الفعالية</h1><p id="brandSub">فريق beyond limits</p></div></div>
-    <div class="hbtns"><button class="btn" id="btnChat" type="button">اسألوا المساعد</button><button class="btn pri" id="btnPdf" type="button">عرض التقرير (PDF)</button></div>
-  </header>
-  <div class="statusbar" id="status"></div>
-  <nav class="tabs" id="tabs">
-    <button class="tab" type="button" data-tab="data"><span class="n">١</span><span>البيانات</span></button>
-    <button class="tab" type="button" data-tab="happened"><span class="n">٢</span><span>ماذا حصل؟</span></button>
-    <button class="tab" type="button" data-tab="recs"><span class="n">٣</span><span>التوصيات</span></button>
+    <button class="tab" type="button" data-tab="overview"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-6 8 6v8a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/></svg><span>نظرة عامة</span></button>
+    <button class="tab" type="button" data-tab="problem"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 8v5M12 16h.01"/></svg><span>تفاصيل المشكلة</span></button>
+    <button class="tab" type="button" data-tab="voices"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6h14v9H9l-4 4z"/><path d="M9 10h6"/></svg><span>صوت الزوار</span></button>
+    <button class="tab" type="button" data-tab="recs"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg><span>الخطة والتوصيات</span></button>
+    <button class="tab" type="button" data-tab="happened"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19V9M10 19V5M15 19v-7M20 19v-4"/></svg><span>كل النتائج</span></button>
+    <button class="tab" type="button" data-tab="data"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v10M8 10l4 4 4-4"/><path d="M5 18h14"/></svg><span>الفعاليات والبيانات</span></button>
+    <button class="tabx" type="button" data-act="openChat"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4l1.8 4.2L18 10l-4.2 1.8L12 16l-1.8-4.2L6 10l4.2-1.8z"/></svg><span>المستشار</span></button>
   </nav>
-  <div class="filters" id="filters"></div>
-  <section class="panel" id="p-data"></section>
-  <section class="panel" id="p-happened"></section>
-  <section class="panel" id="p-recs"></section>
+  <main class="main">
+    <header class="top">
+      <div class="evbar" id="status"></div>
+      <div class="hbtns"><button class="btn" id="btnChat" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4l1.8 4.2L18 10l-4.2 1.8L12 16l-1.8-4.2L6 10l4.2-1.8z"/></svg><span>اسأل المستشار</span></button><button class="btn pri" id="btnPdf" type="button">التقرير PDF</button></div>
+    </header>
+    <div class="filters" id="filters"></div>
+    <section class="panel" id="p-overview"></section>
+    <section class="panel" id="p-problem"></section>
+    <section class="panel" id="p-voices"></section>
+    <section class="panel" id="p-recs"></section>
+    <section class="panel" id="p-happened"></section>
+    <section class="panel" id="p-data"></section>
+  </main>
 </div>
 <div class="scrim" id="scrim"></div>
 <aside class="drawer" id="drawer" dir="rtl" aria-label="أمثلة من الآراء"></aside>

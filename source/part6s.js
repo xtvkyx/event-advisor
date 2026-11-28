@@ -80,6 +80,7 @@ function aspectBlock(a){
  const rec=V.recs.find(z=>z.a===a),acts=[];
  if(rec)h+='<div class="note"><b>'+(m==='live'?'تحسين تقدرون تسوونه الحين':'توصية للموسم القادم')+':</b> '+esc(planOf(rec,m))+' <span class="small">· '+esc(rec.team)+'</span></div>';
  else if(x.neg>0)h+='<div class="small">لا توصية بعد: نحتاج 5 آراء على الأقل من 3 مصادر مستقلة.</div>';
+ if(neg&&issues().some(o=>o.a===a))acts.push(A('عرض التفاصيل','prob',{v:a,pri:true}));
  acts.push(A('أمثلة من الزوار','ev',{id:cev(lab+(neg?': ما أزعج الزوار':': ما أعجب الزوار'),fn)}));
  if(rec){acts.push(A('أضيفوها إلى الخطة','save',{key:rec.key}));acts.push(A('كل التوصيات','go',{v:'recs'}))}
  if(ta)acts.push(A('اعرضوا '+areaName(ta.id),'area',{id:ta.id}));
@@ -161,7 +162,7 @@ function worstAnswer(){
  if(!iss.length)return {h:weakNote()+'<div>ما فيه جانب تكررت الشكوى منه بما يكفي في هذا النطاق.</div>',acts:[],steps:[stepsScope(),stepsData()]};
  const h=weakNote()+'<div><b>أكثر ما أزعج الزوار:</b></div><ul>'+iss.slice(0,3).map(o=>'<li>'+esc(ASPECTS[o.a].label)+': '+txC(o.n,c.N)+esc(flagShort(sigOf(o.a)))+'</li>').join('')+'</ul>';
  const a=iss[0].a;
- return {h,acts:[A('أمثلة من الزوار','ev',{id:cev(ASPECTS[a].label+': ما أزعج الزوار',i=>vis(i)&&i.aspects.some(z=>z.a===a&&z.p==='neg')),pri:true}),A('كل التوصيات','go',{v:'recs'})],steps:[stepsScope(),stepsData(),'رتّبت الجوانب حسب حصة الشكاوى'],after:()=>vfSelect(a)};
+ return {h,acts:[A('عرض التفاصيل','prob',{v:a,pri:true}),A('التعليقات الداعمة','voices',{v:a}),A('كل التوصيات','go',{v:'recs'})],steps:[stepsScope(),stepsData(),'رتّبت الجوانب حسب حصة الشكاوى'],after:()=>vfSelect(a)};
 }
 function evidenceAnswer(asp){
  const iss=issues(),a=asp[0]||(iss[0]&&iss[0].a);
@@ -281,10 +282,10 @@ function firstStepAnswer(){
  if(rec){
   h+='<div class="note"><b>أول شيء تسوونه'+(tied.length>1||rec.a!==top.a?' (لـ«'+esc(ASPECTS[rec.a].label)+'»)':'')+':</b> '+esc(planOf(rec,m))+'<div class="small">'+esc(rec.team)+' · الهدف '+pn(rec.kpi.base)+' ← '+pn(rec.kpi.target)+' · '+esc(whenTxt(rec,m))+'</div></div>';
   h+='<div class="small">'+(m==='live'?'رتّبت التوصيات حسب الأولوية ثم سهولة التنفيذ الآن.':'رتّبت التوصيات حسب قوة الدليل وحجم الأثر.')+' النقاط المضيئة في الحقل هي الآراء اللي بُنيت عليها.</div>';
-  acts.push(A('اسمع الأصوات','ev',{id:cev(ASPECTS[rec.a].label+': ما أزعج الزوار',i=>vis(i)&&i.aspects.some(z=>z.a===rec.a&&z.p==='neg')),pri:true}));
+  acts.push(A('عرض التفاصيل','prob',{v:rec.a,pri:true}));
+  acts.push(A('التعليقات الداعمة','voices',{v:rec.a}));
   acts.push(A('أضيفوها إلى الخطة','save',{key:rec.key}));
  }else h+='<div class="small">ما فيه توصية بعد: التوصية تحتاج 5 شكاوى على الأقل من 3 مصادر مستقلة.</div>';
- acts.push(A('اعرضوا الحقل','go',{v:'happened'}));
  const a=rec?rec.a:top.a;
  return {h:h+demoNote(),acts,steps:[stepsScope(),stepsData(),'رتّبت الشكاوى حسب عددها','اخترت أول إجراء من التوصيات'],after:()=>{if(typeof vfSelect==='function')vfSelect(a)}};
 }
@@ -353,10 +354,11 @@ async function chatSend(text){
   await showReply(r);
  }finally{chatBusy=false}
 }
-function renderChatScope(){const e=$('chatScope');if(e&&V&&V.ui)e.textContent='يعمل على: '+scopeTxt()}
+function renderChatScope(){const e=$('chatScope');if(e&&V&&V.ui)e.textContent='«'+S.settings.event+'» · '+scopeTxt()}
 function setChat(on){document.body.classList.toggle('chat-open',on);$('chat').classList.toggle('on',on);if(on){setTimeout(()=>{try{$('chatIn').focus({preventScroll:true})}catch(e){}},50)}}
 const narrow=()=>window.matchMedia&&window.matchMedia('(max-width:999px)').matches;
 ACT.chatClose=()=>setChat(false);
+ACT.openChat=()=>setChat(true);
 ACT.chip=t=>{if(!$('chat').classList.contains('on'))setChat(true);chatSend(t.dataset.q)};
 ACT.cdo=t=>{
  applyCs(t.dataset.cs);const w=t.dataset.do;
@@ -366,6 +368,8 @@ ACT.cdo=t=>{
  else if(w==='report')openPreview();
  else if(w==='dl')makeReport();
  else if(w==='go')ACT.tab({dataset:{v:t.dataset.v}});
+ else if(w==='prob'){if(narrow())setChat(false);ACT.openProb({dataset:{a:t.dataset.v}})}
+ else if(w==='voices'){if(narrow())setChat(false);ACT.openVoices({dataset:{a:t.dataset.v,sent:'neg'}})}
  else if(w==='area')ACT.area({dataset:{id:t.dataset.id}});
  else if(w==='platEv'){if(narrow())setChat(false);ACT.platEv(t)}
 };
