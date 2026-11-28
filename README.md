@@ -54,6 +54,14 @@ Agent X Hackathon · team **beyond limits** · NEC track: «تحويل الفع�
 
 الأعمدة المقبولة في الملف المرفوع: `text` (مطلوب)، و`platform` (gmaps أو tiktok أو x، أو تُختار عند الرفع)، و`rating`، و`published_at` أو `date`، و`season`، و`area`، و`url`. ملف مثال على الصيغة فقط: [`sample-data/example-format-only.csv`](sample-data/example-format-only.csv) (جمل مكتوبة للتجربة وليست آراء حقيقية).
 
+## الفريق | Team: beyond limits
+
+- غلا الشريف: قائدة الفريق، العرض والتقديم
+- لميس الجبلي: جمع البيانات
+- زهى الرويس: تحليل البيانات
+- غيداء بن معدي: تطوير الوكيل
+- ميس الحماد: تصميم الواجهة
+
 ## الكود والاختبارات
 
 - [`source/`](source/): أجزاء الملف قبل البناء، و`build.py`، واختبارات المتصفح (`./run-tests.sh`).
