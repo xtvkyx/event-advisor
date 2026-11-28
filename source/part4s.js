@@ -208,7 +208,7 @@ function renderData(){
  const filterOn=UP.filter==null?rate>=.6:UP.filter;
  const srcs=S.sources.length?S.sources.map(s=>'<div class="row" style="justify-content:space-between;border-top:1px solid var(--line);padding-top:6px"><span><b>'+esc(s.name)+'</b> · '+fmt(s.n)+' صفًا · '+esc(s.season)+(s.plat?' '+chip(s.plat.split(',').map(k=>PLAT[k]||k).join('، '),'mut'):'')+' <span class="small">'+dAr(s.at.slice(0,10))+'</span></span><button class="btn sm" type="button" data-act="rmSrc" data-id="'+esc(s.id)+'">حذف</button></div>').join(''):'<div class="small">لا ملفات مرفوعة بعد.</div>';
  const d=S.settings.dict;
- $('p-data').innerHTML='<div class="stack">'+searchCard({name:S.settings.event})+
+ $('p-data').innerHTML='<div class="stack">'+searchCard({name:S.settings.event})+clipCard()+
   '<div class="card stack"><h3>الفعالية</h3>'+
    '<div class="row"><select id="evSel" aria-label="اختيار الفعالية">'+S.events.map(e=>'<option value="'+esc(e.id)+'"'+(e.id===S.eventId?' selected':'')+'>'+esc(e.name)+'</option>').join('')+'</select>'+
    '<button class="btn sm" type="button" data-act="showNewEv">+ فعالية جديدة</button></div>'+
@@ -449,8 +449,9 @@ function renderRecs(){
 function itemCard(it){
  const asp=it.intent==='planning'?chip('سؤال: '+(TOPIC[it.topic]||{label:''}).label):it.intent==='official'?chip('رسمي / إعلاني','warn'):it.aspects.map(x=>chip((ASPECTS[x.a]?ASPECTS[x.a].label:x.a)+' · '+(x.p==='neg'?'سلبي':x.p==='pos'?'إيجابي':x.p==='mix'?'مختلط':'ذكر'),x.p==='neg'?'bad':x.p==='pos'?'ok':'mut')+(x.p==='neg'&&ASPECTS[x.a]?' <button class="fixb" type="button" data-act="fixCls" data-id="'+esc(it.id)+'" data-a="'+x.a+'" title="لا تحسبوا هذا الرأي شكوى من '+esc(ASPECTS[x.a].label)+'">التصنيف خطأ</button>':'')).join('');
  const link=/^https?:\/\//.test(it.url||'')?'<a href="'+esc(it.url)+'" target="_blank" rel="noopener noreferrer">فتح الرابط</a>':(it.demo?'<span>رابط تجريبي</span>':'');
- return '<div class="ev"><div class="row">'+chip(it.season)+(it.stars?chip(it.stars+' من 5','mut'):'')+(it.platform?chip(PLAT[it.platform]||'','mut'):'')+(it.day?chip('اليوم '+it.day,'mut'):chip(it.publishedAt?'خارج أيام الموسم':'بلا تاريخ نشر','mut'))+chip(areaName(it.area),'mut')+asp+(it.uncertain?chip('غير محسوم','warn'):'')+(it.demo?chip('تجريبي','warn'):'')+(it.access?chip(it.access,'warn'):'')+'</div>'+
+ return '<div class="ev"><div class="row">'+chip(it.season)+(it.stars?chip(it.stars+' من 5','mut'):'')+(it.platform?chip(PLAT[it.platform]||'','mut'):'')+(it.day?chip('اليوم '+it.day,'mut'):chip(it.publishedAt?'خارج أيام الموسم':'بلا تاريخ نشر','mut'))+chip(areaName(it.area),'mut')+asp+(it.uncertain?chip('غير محسوم','warn'):'')+(it.demo?chip('تجريبي','warn'):'')+(it.access?chip(it.access,'warn'):'')+(it.clipRef?chip('مقطع مفرّغ · '+it.clipTs,'ok')+(it.test?chip('مقطع اختبار','warn'):''):'')+'</div>'+
   '<div class="tx'+(isEn(it.text)?' en':'')+'">'+esc(it.text)+'</div>'+
+  (it.clipRef?'<div class="row2"><button class="btn sm coral" type="button" data-act="clipEv" data-c="'+esc(it.clipRef)+'" data-t="'+it.clipT+'">افتح الدليل · '+esc(it.clipTs)+'</button></div>':'')+
   '<div class="small row" style="gap:4px 14px">'+(it.publishedAt?'<span>نُشر '+dAr(it.publishedAt)+'</span>':'')+link+(it.likes?'<span>إعجابات: '+fmt(it.likes)+'</span>':'')+'</div></div>';
 }
 function renderDrawer(){
@@ -475,7 +476,7 @@ function startBox(){
   '<div class="done"><i>✓</i><div><b>اخترتم الفعالية</b><div class="small">«'+esc(S.settings.event)+'»</div></div></div>'+
   '<div class="now"><i>٢</i><div><b>ابحثوا عنها في الويب، أو ارفعوا ملف التعليقات</b><div class="small">المستشار يبحث ويتحقق من المصادر بنفسه. الملفات (CSV أو JSON أو TXT) خيار إضافي</div></div></div>'+
   '<div><i>٣</i><div><b>نحلل ونعرض أولوية اليوم</b><div class="small">مع التعليقات اللي بُنيت عليها كل نتيجة</div></div></div></div>'+
-  '</div>'+searchCard({name:S.settings.event})+'<div class="row2"><button class="btn" type="button" data-act="tab" data-v="data">أو ارفعوا ملف تعليقات</button></div>';
+  '</div>'+searchCard({name:S.settings.event})+clipCard()+'<div class="row2"><button class="btn" type="button" data-act="tab" data-v="data">أو ارفعوا ملف تعليقات</button></div>';
 }
 function tieInfo(a){
  const iss=issues(),me=iss.find(o=>o.a===a);if(!me)return '';
@@ -494,12 +495,12 @@ function overviewPick(){
 }
 function renderOverview(){
  const el=$('p-overview');if(!el)return;
- if(!P.items.length){el.innerHTML=searchSummary()+startBox();return}
+ if(!P.items.length){el.innerHTML=searchSummary()+clipsSummary()+startBox();return}
  const c=V.cur,m=mode(),iss=issues(),gd=goods(),pk=overviewPick(),a=pk.a,rec=pk.rec;
  const kp=(l,v,s)=>'<div class="kpi"><span>'+l+'</span><b>'+v+'</b><small>'+s+'</small></div>';
  let h='<div class="ptitle"><div><h2>نظرة عامة</h2><p>'+esc(scopeTxt())+'</p></div>'+(c.N<30?chip('عينة صغيرة · '+rAr(c.N),'warn'):chip('عينة '+(c.N>=100?'جيدة':'متوسطة')+' · '+rAr(c.N),c.N>=100?'ok':'warn'))+'</div>';
  h+='<div class="kpis">'+kp('آراء الزوار',fmt(c.N),'من '+fmt(V.items.length)+' مادة في النطاق')+kp('اشتكوا من شيء',c.N?pc(c.negAny/c.N):'—',fmt(c.negAny)+' من '+fmt(c.N))+
-  kp('مشاعر إيجابية',c.sent.n?pc(c.sent.pos/c.sent.n):'—','من '+fmt(c.sent.n)+' مادة لها شعور')+kp('توصيات جاهزة',fmt(V.recs.length),'شكوى تكررت 5 مرات من 3 مصادر')+'</div>'+searchSummary();
+  kp('مشاعر إيجابية',c.sent.n?pc(c.sent.pos/c.sent.n):'—','من '+fmt(c.sent.n)+' مادة لها شعور')+kp('توصيات جاهزة',fmt(V.recs.length),'شكوى تكررت 5 مرات من 3 مصادر')+'</div>'+searchSummary()+clipsSummary();
  let pr;
  if(a){
   const x=c.A[a],lab=ASPECTS[a].label,tie=tieInfo(a);

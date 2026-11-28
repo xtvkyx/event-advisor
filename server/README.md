@@ -41,3 +41,22 @@ python -m unittest discover -s server
 ```
 
 The test inputs in `test_verify.py` are hand-written result shapes, not real pages.
+
+## Whisper: transcribing clips
+
+After verifying sources, the search runs a «تفريغ المقاطع» step. A clip is transcribed only when we can reach its audio and are allowed to process it:
+
+| Case | Status in the UI |
+| --- | --- |
+| TikTok, X, Instagram, YouTube… | غير متاح للتفريغ (we can't reach the audio, or downloading isn't allowed) |
+| A direct audio/video file on a page without an open licence | غير مسموح بمعالجته (not transcribed) |
+| A Wikimedia Commons file, or a page with a Creative Commons / public-domain licence | Transcribed, one clip per search to start (`MAX_CLIPS`) |
+| A clip the organiser uploads after confirming they may process it | Transcribed |
+
+Each segment keeps the event name, the source link and the time it was spoken. Visitor opinions go into the existing analysis. Announcements and media coverage are shown as information only. Clips that don't name the event are not used (a name slightly misheard by Whisper still counts). The audio is written to a temp file and deleted after transcription; an uploaded clip can be played only during the session it was uploaded in.
+
+```powershell
+python -m pip install -r server/requirements-whisper.txt
+```
+
+The model (`WHISPER_MODEL`, default `base`) downloads from Hugging Face on first use and runs on the CPU. `small` is more accurate on Arabic and slower.
