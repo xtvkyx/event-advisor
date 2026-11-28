@@ -94,7 +94,7 @@ const word=t=>isLat(t)?'(?<![a-z\'])'+t+'(?![a-z])':'(?<!['+AB+'])'+t+'(?!['+AB+
 const AKW={
  wait:['انتظار','انتظرنا','ننتظر','طابور','طوابير','تأخير','تأخرنا','queue','queues','queueing','wait','waiting','waited','long line','lines'],
  crowd:['زحمة','زحام','مزدحم','ازدحام','crowd','crowded','packed','jammed','congested'],
- entry:['موقف','مواقف','بوابة','بوابات','المدخل','مدخل','دخول','parking','entrance','gate','gates','entry','security check'],
+ entry:['موقف','مواقف','بوابة','بوابات','المدخل','مدخل','دخول','باص','باصات','شتل','النقل','المواصلات','parking','entrance','gate','gates','entry','security check','shuttle','bus','buses','transport'],
  booking:['حجز','احجز','حجزنا','التطبيق','تطبيق','booking','book','booked','app','website','الموقع'],
  wayfinding:['ضيعنا','ضعنا','ما عرفنا وين','ما عرفت وين','وين المطعم','لافتة','لافتات','لوحات توجيه','خريطة','اتجاهات','توجيه','لقينا','lost','signs','signage','directions','find our way','where is'],
  price:['غالي','غالية','أسعار','الأسعار','سعر','رخيص','مبالغ','أغلى','تذكرة','تذاكر','التذكرة','التذاكر','expensive','price','prices','cost','overpriced','ripoff','rip off','cheap','pricey','ticket','tickets'],

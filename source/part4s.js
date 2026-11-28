@@ -12,7 +12,7 @@ let D=null,PEND=[],UP={season:'auto',text:'',newId:'',newOpen:'',filter:null,pla
 /* live (event still running) or ended (planning next season) */
 function mode(){
  const st=S.ui.status;if(st==='live'||st==='ended')return st;
- if(demoOn())return 'live'; /* بوليفارد وورلد شغّال الآن: موسم الرياض بدأ 21 أكتوبر 2026 */
+ if(demoOn())return BUILTIN[S.eventId].live?'live':'ended'; /* built-in demo events carry their own status */
  const sc=seasonObj(S.ui.season);
  return (sc&&sc.open&&S.ui.season===currentSeason())?'live':'ended';
 }
@@ -139,7 +139,7 @@ function orgTips(m){
 function renderStatus(){
  const m=mode();
  $('status').innerHTML='<div class="evpick"><select id="evTop" aria-label="الفعالية الحالية">'+S.events.map(e=>'<option value="'+esc(e.id)+'"'+(e.id===S.eventId?' selected':'')+'>'+esc(e.name)+'</option>').join('')+'<option value="__new">+ فعالية جديدة…</option></select></div>'+
-  (demoOn()?'<span class="demo-flag">بيانات ديمو</span>':'')+
+  demoFlag()+
   '<span>المصادر: <b>'+srcTxt()+'</b></span><span>'+chip(m==='live'?'قائمة الحين':'انتهت',m==='live'?'ok':'mut')+'</span>'+
   (S.lastOk&&P.items.length?'<span>آخر تحليل: <b>'+dAr(S.lastOk.slice(0,10))+'</b></span>':'');
  const bs=$('brandSub');if(bs)bs.textContent='لأي فعالية · فريق beyond limits';
@@ -198,7 +198,7 @@ function emptyEvent(){
 
 /* ---------- step 1: data ---------- */
 function renderData(){
- const m=mode(),blvd=S.eventId==='blvd',cnt=srcCounts();
+ const m=mode(),blvd=!!BUILTIN[S.eventId],cnt=srcCounts();
  const segBtn=(v,t)=>'<button type="button" data-act="status" data-v="'+v+'" class="'+(m===v?'on':'')+'" aria-pressed="'+(m===v)+'">'+t+'</button>';
  const seasons='<option value="auto"'+(UP.season==='auto'?' selected':'')+'>حسب تاريخ النشر في الملف (تلقائي)</option>'+
   allSeasonIds().map(id=>'<option value="'+esc(id)+'"'+(UP.season===id?' selected':'')+'>'+esc(id)+((seasonObj(id)||{}).open?'':' (بلا تواريخ)')+'</option>').join('')+
@@ -215,13 +215,13 @@ function renderData(){
    (UP.newEv?'<div class="stack" style="gap:8px;border-top:1px solid var(--line);padding-top:10px"><label class="fld">اسم الفعالية<input type="text" id="evName" placeholder="مثال: ونتر وندرلاند"></label>'+
     '<label class="fld">كلمات أو وسوم تدل عليها (اختياري، افصلوا بفاصلة)<textarea id="evKw" placeholder="مثال: winter wonderland, #وندرلاند"></textarea></label>'+
     '<div class="row"><button class="btn pri" type="button" data-act="newEv">إضافة الفعالية</button><button class="btn" type="button" data-act="cancelNewEv">إلغاء</button></div></div>':'')+
-   '<p class="small">الوكيل غير مربوط بفعالية بعينها: اختاروا فعالية أو أضيفوا واحدة جديدة، فيحلل بياناتها بنفس الطريقة. بوليفارد وورلد هي التجربة الأولى.</p>'+
+   '<p class="small">الوكيل غير مربوط بفعالية بعينها: اختاروا فعالية أو أضيفوا واحدة جديدة، فيحلل بياناتها بنفس الطريقة. بوليفارد وورلد وشتاء طنطورة فعاليتان جاهزتان للتجربة.</p>'+
    '<div class="seg" role="group" aria-label="حالة الفعالية">'+segBtn('live','ما زالت قائمة')+segBtn('ended','انتهت')+'</div>'+
-   '<p class="small">'+(m==='live'?'سنعرض «تحسينات تقدرون تسوونها الحين»، وبعد التنفيذ ترفعون ملفًا جديدًا ونقيس الفرق.':'سنعرض «توصيات للموسم القادم» مبنية على ما حصل فعلًا في الموسم.')+' '+(S.ui.status==='live'||S.ui.status==='ended'?'الحالة محددة يدويًا.':demoOn()?'بوليفارد وورلد شغّال الآن (موسم الرياض بدأ 21 أكتوبر 2026)، فالحالة الافتراضية «ما زالت قائمة». غيّروها يدويًا إذا تغيّر الوضع.':'لم تُحدَّد الحالة، فتُحسب من الموسم المختار.')+'</p></div>'+
+   '<p class="small">'+(m==='live'?'سنعرض «تحسينات تقدرون تسوونها الحين»، وبعد التنفيذ ترفعون ملفًا جديدًا ونقيس الفرق.':'سنعرض «توصيات للموسم القادم» مبنية على ما حصل فعلًا في الموسم.')+' '+(S.ui.status==='live'||S.ui.status==='ended'?'الحالة محددة يدويًا.':demoOn()?'الحالة الافتراضية لهذه الفعالية التجريبية «'+(BUILTIN[S.eventId].live?'ما زالت قائمة':'انتهت')+'». غيّروها يدويًا إذا تغيّر الوضع.':'لم تُحدَّد الحالة، فتُحسب من الموسم المختار.')+'</p></div>'+
   '<div class="card stack"><h3>مصادر البيانات المتاحة الآن</h3>'+
-   ['gmaps','tiktok','x'].map(k=>'<div class="src"><span><b>'+PLAT[k]+'</b><span class="small"> · '+PLAT_NOTE[k]+'</span></span><span><span class="n">'+fmt(cnt[k]||0)+'</span> '+chip('بيانات مجمّعة','mut')+'</span></div>').join('')+
+   ['gmaps','tiktok','x'].concat(cnt.sim?['sim']:[]).map(k=>'<div class="src"><span><b>'+PLAT[k]+'</b><span class="small"> · '+PLAT_NOTE[k]+'</span></span><span><span class="n">'+fmt(cnt[k]||0)+'</span> '+(k==='sim'?chip('محاكاة للديمو','warn'):chip('بيانات مجمّعة','mut'))+'</span></div>').join('')+
    '<div class="small">كلها بيانات جُمعت مسبقًا وتدخل برفع ملف. لا يوجد ربط مباشر بأي منصة في هذه النسخة.</div>'+
-   (blvd?'<div class="note'+(S.builtin?'':' warn')+'">'+(S.builtin?'مضمّنة بيانات الفريق المجمّعة لبوليفارد وورلد ('+fmt(sampleRows().length)+' مادة: تقييمات قوقل ماب نسخها الفريق بلا أسماء، ومنشورات تيك توك وX جُمعت من بحث عام يوم 20 نوفمبر 2026 وهي عناوين فقط وليست تعليقات). عيّنة منتقاة وليست عشوائية.':'بيانات الفريق المجمّعة موقوفة. التحليل الآن على ما ترفعونه فقط.')+'</div>'+
+   (blvd?'<div class="note'+(S.builtin?'':' warn')+'">'+(S.builtin?'مضمّنة '+(BUILTIN[S.eventId].sim?'بيانات محاكاة للديمو':'بيانات الفريق المجمّعة')+' لـ«'+esc(BUILTIN[S.eventId].name)+'» ('+fmt(BUILTIN[S.eventId].rows().length)+' مادة). '+esc(BUILTIN[S.eventId].note):'بيانات الفريق المجمّعة موقوفة. التحليل الآن على ما ترفعونه فقط.')+'</div>'+
     '<div class="row"><button class="btn sm'+(S.builtin?'':' on')+'" type="button" data-act="toggleBuiltin">'+(S.builtin?'إيقاف بيانات الفريق المجمّعة':'تشغيل بيانات الفريق المجمّعة')+'</button></div>':'')+'</div>'+
   '<div class="card stack"><h3>ارفعوا بيانات مجمّعة لهذه الفعالية</h3>'+
    '<label class="drop" id="drop" tabindex="-1"><input type="file" id="fFile" multiple accept=".csv,.json,.txt,text/csv,application/json,text/plain"><b>اضغطوا لاختيار الملفات</b><span class="small">أو اسحبوها هنا · CSV أو JSON أو TXT · تقدرون ترفعون أكثر من ملف</span></label>'+
@@ -355,7 +355,7 @@ function vfHero(){
  const lit=a?vfLit(a):()=>false;
  const dots=VF.items.map((i,k)=>'<button type="button" data-act="vfDot" data-id="'+esc(i.id)+'" class="'+(!opinion(i)?'h':lit(i)?'on':'')+'" aria-label="'+(opinion(i)?'رأي زائر':'مادة لا تُحسب')+'"></button>').join('');
  const q=c.N>=100?['عينة جيدة','ok']:c.N>=30?['عينة متوسطة','warn']:['عينة صغيرة','bad'];
- return '<div class="vf" id="vf"><div class="pill">'+chip(q[0]+' · '+rAr(c.N),q[1])+chip(sLbl(V.ui.season))+chip(perLabel())+(V.ui.area!=='all'?chip(areaName(V.ui.area)):'')+(demoOn()?'<span class="demo-flag">بيانات ديمو</span>':'')+'</div>'+
+ return '<div class="vf" id="vf"><div class="pill">'+chip(q[0]+' · '+rAr(c.N),q[1])+chip(sLbl(V.ui.season))+chip(perLabel())+(V.ui.area!=='all'?chip(areaName(V.ui.area)):'')+demoFlag()+'</div>'+
   '<div id="vfHead">'+vfHead(a)+'</div>'+
   (iss.length?'<div class="vf-chips" role="group" aria-label="اختاروا الشكوى">'+iss.map(o=>'<button type="button" data-act="vfAsp" data-a="'+o.a+'" aria-pressed="'+(o.a===a)+'">'+esc(ASPECTS[o.a].label)+' '+fmt(o.n)+'</button>').join('')+'</div>':'')+
   '<div class="vf-main"><div><div class="field" id="field">'+dots+'</div>'+
@@ -449,7 +449,7 @@ function renderRecs(){
 function itemCard(it){
  const asp=it.intent==='planning'?chip('سؤال: '+(TOPIC[it.topic]||{label:''}).label):it.intent==='official'?chip('رسمي / إعلاني','warn'):it.aspects.map(x=>chip((ASPECTS[x.a]?ASPECTS[x.a].label:x.a)+' · '+(x.p==='neg'?'سلبي':x.p==='pos'?'إيجابي':x.p==='mix'?'مختلط':'ذكر'),x.p==='neg'?'bad':x.p==='pos'?'ok':'mut')+(x.p==='neg'&&ASPECTS[x.a]?' <button class="fixb" type="button" data-act="fixCls" data-id="'+esc(it.id)+'" data-a="'+x.a+'" title="لا تحسبوا هذا الرأي شكوى من '+esc(ASPECTS[x.a].label)+'">التصنيف خطأ</button>':'')).join('');
  const link=/^https?:\/\//.test(it.url||'')?'<a href="'+esc(it.url)+'" target="_blank" rel="noopener noreferrer">فتح الرابط</a>':(it.demo?'<span>رابط تجريبي</span>':'');
- return '<div class="ev"><div class="row">'+chip(it.season)+(it.stars?chip(it.stars+' من 5','mut'):'')+(it.platform?chip(PLAT[it.platform]||'','mut'):'')+(it.day?chip('اليوم '+it.day,'mut'):chip(it.publishedAt?'خارج أيام الموسم':'بلا تاريخ نشر','mut'))+chip(areaName(it.area),'mut')+asp+(it.uncertain?chip('غير محسوم','warn'):'')+(it.demo?chip('تجريبي','warn'):'')+'</div>'+
+ return '<div class="ev"><div class="row">'+chip(it.season)+(it.stars?chip(it.stars+' من 5','mut'):'')+(it.platform?chip(PLAT[it.platform]||'',it.sim?'warn':'mut'):'')+(it.day?chip('اليوم '+it.day,'mut'):chip(it.publishedAt?'خارج أيام الموسم':'بلا تاريخ نشر','mut'))+chip(areaName(it.area),'mut')+asp+(it.uncertain?chip('غير محسوم','warn'):'')+(it.demo?chip('تجريبي','warn'):'')+'</div>'+
   '<div class="tx'+(isEn(it.text)?' en':'')+'">'+esc(it.text)+'</div>'+
   '<div class="small row" style="gap:4px 14px">'+(it.publishedAt?'<span>نُشر '+dAr(it.publishedAt)+'</span>':'')+link+(it.likes?'<span>إعجابات: '+fmt(it.likes)+'</span>':'')+'</div></div>';
 }
@@ -503,7 +503,7 @@ function renderOverview(){
  if(a){
   const x=c.A[a],lab=ASPECTS[a].label,tie=tieInfo(a);
   pr='<div class="prio"><span class="eyebrow">أولوية اليوم</span><h3>'+esc(lab)+'</h3>'+
-   '<p class="lead"><b>'+fmt(x.neg)+'</b> '+(x.neg===1?'رأي':'آراء')+' من '+fmt(c.N)+' تشتكي من '+esc(lab)+'، من '+esc(mq(x.negClips.size))+(tie?' · '+esc(tie):'')+'</p>'+miniField(a);
+   '<p class="lead"><b>'+fmt(x.neg)+'</b> '+(x.neg===1?'رأي':x.neg<=10?'آراء':'رأيًا')+' من '+fmt(c.N)+' تشتكي من '+esc(lab)+'، من '+esc(mq(x.negClips.size))+(tie?' · '+esc(tie):'')+'</p>'+miniField(a);
   if(rec){pr+='<div class="firstact"><span class="lb">أول إجراء مقترح</span><b>'+esc(planOf(rec,m))+'</b><div class="facts"><span>'+esc(rec.team)+'</span><span>الهدف '+pn(rec.kpi.base)+' ← '+pn(rec.kpi.target)+'</span><span>'+esc(whenTxt(rec,m))+'</span></div></div>'+
    '<p class="small">'+(m==='live'?'اخترناها لأنها الأعلى أولوية ثم الأسهل تنفيذًا الآن بين الشكاوى المتكررة.':'اخترناها لأنها الأقوى دليلًا وأثرًا.')+'</p>'}
   else pr+='<div class="firstact" style="border-color:rgba(245,194,107,.4);background:rgba(245,194,107,.07)"><span class="lb" style="color:var(--warn)">ما فيه توصية بعد</span><span class="small">التوصية تحتاج 5 شكاوى على الأقل من 3 مصادر مستقلة. عندكم '+fmt(x.neg)+'.</span></div>';
@@ -515,7 +515,7 @@ function renderOverview(){
   (top?'<p>أكثر شكوى: '+esc(ASPECTS[top.a].label)+' ('+fmt(top.n)+')'+(iss[1]&&iss[1].n===top.n?' بالتساوي مع '+esc(ASPECTS[iss[1].a].label):'')+'.</p>':'')+
   (gd[0]?'<p>أكثر ما أعجبهم: '+esc(ASPECTS[gd[0].a].label)+' ('+fmt(gd[0].n)+').</p>':'')+
   (c.N<30?'<p class="small" style="color:var(--warn)">العينة صغيرة، فالأرقام اتجاه مبدئي.</p>':'')+
-  (demoOn()?'<p class="small">البيانات مجمّعة مسبقًا وليست اتصالًا مباشرًا.</p>':'')+
+  (demoOn()?'<p class="small">'+esc(BUILTIN[S.eventId].short)+'</p>':'')+
   '<div class="row2"><button class="btn" type="button" data-act="openChat">اسأل المستشار</button></div></div>';
  h+='<div class="ov">'+pr+'<div style="display:grid;gap:16px">'+brief+'</div></div>';
  const others=iss.filter(o=>o.a!==a);
@@ -545,7 +545,7 @@ function renderProblem(){
  const byP={};x.negIds.forEach(id=>{const it=P.byId[id];if(it){const k=it.platform||'other';byP[k]=(byP[k]||0)+1}});
  const mx=Math.max(1,...Object.values(byP));
  const ta=V.ui.area==='all'?topAreaFor(a):null;
- const what='<div class="pcard"><h3><span class="num">١</span>وش حصل؟</h3><div class="bignum">'+fmt(x.neg)+' <small>'+(x.neg===1?'رأي':'آراء')+' من '+fmt(c.N)+' تشتكي من '+esc(lab)+'</small></div>'+
+ const what='<div class="pcard"><h3><span class="num">١</span>وش حصل؟</h3><div class="bignum">'+fmt(x.neg)+' <small>'+(x.neg===1?'رأي':x.neg<=10?'آراء':'رأيًا')+' من '+fmt(c.N)+' تشتكي من '+esc(lab)+'</small></div>'+
   '<div class="facts"><span>'+pc(c.N?x.neg/c.N:0)+' من الآراء</span><span>'+esc(mq(x.negClips.size))+'</span>'+(x.pos?'<span>وأشاد به '+fmt(x.pos)+'</span>':'')+'</div>'+
   (tie?'<p class="small" style="color:var(--warn)">'+esc(tie)+'</p>':'')+
   '<div class="platsplit">'+PLATS.filter(k=>byP[k]).map(k=>'<div><span>'+esc(PLAT[k])+'</span><i style="width:'+Math.round(byP[k]/mx*100)+'%"></i><b>'+byP[k]+'</b></div>').join('')+'</div>'+

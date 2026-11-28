@@ -59,7 +59,7 @@ const scopeTxt=()=>scopeTxt0()+(V.ui.plat&&V.ui.plat!=='all'&&PLAT[V.ui.plat]?' 
 const stepsScope=()=>'حدّدت النطاق: '+scopeTxt();
 const stepsData=()=>'راجعت '+rAr(V.cur.N)+' من '+srcPh(V.cur.clips);
 const weakNote=()=>V.cur.N<15?'<div class="note warn">الآراء في هذا النطاق قليلة ('+rAr(V.cur.N)+')، فالأرقام اتجاه مبدئي فقط.</div>':V.cur.N<30?'<div class="note warn">العينة صغيرة نسبيًا ('+rAr(V.cur.N)+')، فالنسب للإرشاد فقط.</div>':'';
-const demoNote=()=>demoOn()?'<div class="small">ملاحظة: بيانات بوليفارد وورلد هنا مجمّعة مسبقًا (تقييمات قوقل ماب ومنشورات عامة من تيك توك وX)، وهي عينة منتقاة وليست عشوائية ولا اتصالًا مباشرًا.</div>':'';
+const demoNote=()=>demoOn()?'<div class="small">ملاحظة: '+esc(BUILTIN[S.eventId].note)+'</div>':'';
 const cq=i=>'<blockquote class="cq"'+(isEn(i.text)?' dir="ltr" style="text-align:left"':'')+'>'+(i.platform&&PLAT[i.platform]?'<span class="small">'+esc(PLAT[i.platform])+' · </span>':'')+esc(clipT(i.text.replace(/\s+/g,' '),170))+(/^https?:\/\//.test(i.url||'')?' <a href="'+esc(i.url)+'" target="_blank" rel="noopener noreferrer">المصدر ↗</a>':'')+'</blockquote>';
 const tgtNote=qs=>qs.some(q=>q.query==='targeted')?'<div class="small">بعض هذه الأمثلة من بحث موجّه، ولا تدخل في النسب.</div>':'';
 const flagShort=s=>!s?'':s.flag==='worse'?' (أعلى من '+s.baseId+')':s.flag==='better'?' (أقل من '+s.baseId+')':'';
@@ -379,6 +379,6 @@ function initChat(){
  $('chatForm').addEventListener('submit',e=>{e.preventDefault();chatSend($('chatIn').value)});
  $('btnChat').addEventListener('click',()=>setChat(!$('chat').classList.contains('on')));
  $('chatFab').addEventListener('click',()=>setChat(true));
- addMsg('a','<div class="body"><div>أهلًا، أنا مستشار الفعالية. اسألوني عن آراء الزوار: المشاعر، الشكاوى المتكررة، ما أعجبهم، المقارنة بين المنصات، أو اطلبوا «تقرير». أجاوب من البيانات المجمّعة فقط.</div>'+(demoOn()?'<div class="small" style="margin-top:6px">بيانات بوليفارد وورلد مجمّعة مسبقًا، وليست اتصالًا مباشرًا بأي منصة.</div>':'')+'</div>');
+ addMsg('a','<div class="body"><div>أهلًا، أنا مستشار الفعالية. اسألوني عن آراء الزوار: المشاعر، الشكاوى المتكررة، ما أعجبهم، المقارنة بين المنصات، أو اطلبوا «تقرير». أجاوب من البيانات المجمّعة فقط.</div>'+(demoOn()?'<div class="small" style="margin-top:6px">'+esc(BUILTIN[S.eventId].short)+'</div>':'')+'</div>');
  if(window.matchMedia&&window.matchMedia('(min-width:1200px)').matches)setChat(true);
 }

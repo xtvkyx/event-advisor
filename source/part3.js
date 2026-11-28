@@ -25,14 +25,28 @@ const sIn=id=>nsd(id)?id:'موسم '+id;
 function allSeasonIds(){const ss=S.settings.seasons;return ss.filter(s=>s.open).sort((a,b)=>a.open<b.open?-1:1).concat(ss.filter(s=>!s.open).sort((a,b)=>a.id<b.id?-1:1)).map(s=>s.id)}
 function seasonOrder(){const all=allSeasonIds(),have=new Set(activeRows().map(r=>r.season)),o=all.filter(id=>have.has(id));return o.length?o:all}
 /* ---------- events (reusable for any event) + sources (adapters) ---------- */
-const PLATS=['gmaps','tiktok','x','other'];
-const PLAT={gmaps:'قوقل ماب',tiktok:'تيك توك',x:'X (تويتر)',other:'منصة أخرى'};
-const PLAT_NOTE={gmaps:'تقييمات الزوار (نصوص ونجوم)',tiktok:'عناوين الفيديوهات وتعليقاتها',x:'نصوص المنشورات',other:'ملف بلا منصة محددة'};
+const PLATS=['gmaps','tiktok','x','sim','other'];
+const PLAT={gmaps:'قوقل ماب',tiktok:'تيك توك',x:'X (تويتر)',sim:'بيانات محاكاة للديمو',other:'منصة أخرى'};
+const PLAT_NOTE={gmaps:'تقييمات الزوار (نصوص ونجوم)',tiktok:'عناوين الفيديوهات وتعليقاتها',x:'نصوص المنشورات',sim:'تعليقات اصطناعية للديمو، ليست من زوار حقيقيين',other:'ملف بلا منصة محددة'};
 const FUTURE=[
  {id:'gmaps_live',label:'قوقل ماب المباشر',desc:'ربط مباشر لجمع التقييمات والنجوم تلقائيًا بدل رفع الملفات.'},
  {id:'cameras',label:'الكاميرات',desc:'استخدام بيانات الكاميرات الجاهزة (أعداد الزوار وحركة الحشود) لفهم الازدحام وربطه بآراء الزوار، بشرط الخصوصية والموافقات. لا تحكّم مباشر بالكاميرات.'},
  {id:'reports',label:'رفع تقاريركم',desc:'رفع تقارير ومستندات المنظّم لدمجها مع ما يعرفه الوكيل.'}];
-const demoOn=()=>S.eventId==='blvd'&&!!S.builtin;
+/* built-in demo events: each brings its own settings and rows; everything else is computed by the same pipeline */
+const BUILTIN={
+ blvd:{name:'بوليفارد وورلد',def:()=>clone(DEF),rows:()=>sampleRows(),sim:false,now:'2026-11-20',live:true,flag:'بيانات ديمو',slug:'Boulevard-World',
+  short:'البيانات مجمّعة مسبقًا وليست اتصالًا مباشرًا.',
+  note:'بيانات مجمّعة مسبقًا: تقييمات قوقل ماب نسخها الفريق بلا أسماء، ومنشورات عامة من تيك توك وX (عناوين فقط). عيّنة منتقاة وليست عشوائية ولا اتصالًا مباشرًا.'},
+ tantora:{name:'شتاء طنطورة — العلا',def:()=>tantDef(),rows:()=>tantoraRows(),sim:true,now:'2026-11-28',live:false,flag:'بيانات محاكاة للديمو',slug:'Winter-at-Tantora',
+  short:'بيانات محاكاة للديمو: تعليقات اصطناعية، ليست من قوقل ماب ولا من زوار حقيقيين.',
+  note:'بيانات محاكاة للديمو: تعليقات اصطناعية كتبها الفريق لتجربة المسار، وليست من قوقل ماب ولا من زوار حقيقيين. لم نجد آراء زوار منشورة تخص شتاء طنطورة تحديدًا ومسموحًا باستخدامها.'}
+};
+const demoOn=()=>!!BUILTIN[S.eventId]&&!!S.builtin;
+const simOn=()=>demoOn()&&BUILTIN[S.eventId].sim;
+const demoFlag=()=>demoOn()?'<span class="demo-flag">'+esc(BUILTIN[S.eventId].flag)+'</span>':'';
+function builtinEvent(id){const b=blankEvent(BUILTIN[id].name,[]);b.settings=BUILTIN[id].def();b.builtin=true;return b}
+function ensureBuiltinEvents(){for(const id in BUILTIN){if(!S.events.some(e=>e.id===id))S.events.push({id,name:BUILTIN[id].name});if(id!==S.eventId&&!S.evStore[id])S.evStore[id]=builtinEvent(id)}}
+ensureBuiltinEvents(); /* after loading saved state: add built-in events this browser hasn't seen */
 const curEvent=()=>S.events.find(e=>e.id===S.eventId)||S.events[0];
 function saveEv(){const o={};for(const k of EV_KEYS)o[k]=clone(S[k]);S.evStore[S.eventId]=o}
 function loadEv(id){const o=S.evStore[id];if(!o)return false;for(const k of EV_KEYS)if(o[k]!==undefined)S[k]=clone(o[k]);return true}
@@ -60,8 +74,8 @@ function sampleRows(){
  }
  return SAMPLE_ROWS;
 }
-const activeRows=()=>(demoOn()?sampleRows():[]).concat(S.imported);
-function nowStr(){if(demoOn())return '2026-11-20';return S.importMeta?S.importMeta.at.slice(0,10):new Date().toISOString().slice(0,10)}
+const activeRows=()=>(demoOn()?BUILTIN[S.eventId].rows():[]).concat(S.imported);
+function nowStr(){if(demoOn())return BUILTIN[S.eventId].now;return S.importMeta?S.importMeta.at.slice(0,10):new Date().toISOString().slice(0,10)}
 function hasAllOpt(){const o=seasonOrder();return o.length>1&&o.every(id=>!(S.settings.seasons.find(s=>s.id===id)||{}).open)}
 function currentSeason(){const o=seasonOrder();if(!o.length||hasAllOpt())return ALLP;const d=o.filter(id=>seasonObj(id).open);return d.length?d[d.length-1]:o[o.length-1]}
 function curDays(){const s=seasonObj(currentSeason());if(!s||!s.open)return Infinity;return Math.max(1,Math.min(120,dnum(nowStr())-dnum(s.open)+1))}

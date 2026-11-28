@@ -210,7 +210,7 @@ const ACT={
   const id='e'+Date.now().toString(36),b=blankEvent(nm,kw);
   S.events.push({id,name:nm.trim()});S.evStore[id]=b;S.eventId=id;loadEv(id);S.ui.tab='data';
   D=null;PEND=[];UP.newEv=false;UP.season='auto';
-  ensureSeasons();processAll();initStamp();persist();renderAll();window.scrollTo(0,0);
+  ensureSeasons();processAll();initStamp();persist();renderAll();window.scrollTo(0,0);chatEventNote();
   toast('أُضيفت الفعالية «'+nm.trim()+'». ارفعوا بياناتها (تيك توك أو X أو قوقل ماب) لنحللها.');
  },
  platEv:t=>{const pl=t.dataset.p;D={title:PLAT[pl]+': المواد المجمّعة',fn:i=>i.platform===pl,g:8,t:8,all:true};renderDrawer()},
@@ -233,10 +233,11 @@ const ACT={
   ensureSeasons();if(!seasonObj(S.ui.season))S.ui.season=currentSeason();
   processAll();persist();renderAll();toast('حُفظت الإعدادات وأُعيد التحليل.');
  },
- resetSettings:()=>{S.settings=S.eventId==='blvd'?clone(DEF):blankEvent(curEvent().name,[]).settings;ensureSeasons();S.ui.season=currentSeason();processAll();persist();renderAll();toast('أُعيدت الإعدادات الافتراضية.')},
+ resetSettings:()=>{S.settings=BUILTIN[S.eventId]?BUILTIN[S.eventId].def():blankEvent(curEvent().name,[]).settings;ensureSeasons();S.ui.season=currentSeason();processAll();persist();renderAll();toast('أُعيدت الإعدادات الافتراضية.')},
  resetAll:t=>{
   if(!t.dataset.arm){t.dataset.arm='1';t.textContent='اضغطوا مرة ثانية للتأكيد';setTimeout(()=>{if(t.isConnected){delete t.dataset.arm;t.textContent='إعادة ضبط كل شيء'}},4000);return}
   Object.assign(S,{settings:clone(DEF),builtin:true,batch:1,imported:[],importMeta:null,saved:[],ideas:[],lessons:[clone(EX_LESSON)],reviewed:{},overrides:{},sources:[],snaps:[],lastOk:null,lastErr:null,simFail:false,lastDiff:null,runLog:[],ui:UI0(),events:[{id:'blvd',name:'بوليفارد وورلد'}],eventId:'blvd',evStore:{}});
+  ensureBuiltinEvents();
   D=null;PEND=[];UP={season:'auto',text:'',newId:'',newOpen:'',filter:null,platform:'auto',newEv:false};
   ensureSeasons();S.ui.season=currentSeason();processAll();initStamp();persist();renderAll();window.scrollTo(0,0);toast('أُعيد كل شيء إلى البداية.');
  },
@@ -259,7 +260,7 @@ function Doc(demo){
   const cv=document.createElement('canvas');cv.width=PW*SC;cv.height=PH*SC;
   const c=cv.getContext('2d');c.scale(SC,SC);c.fillStyle='#fff';c.fillRect(0,0,PW,PH);c.textBaseline='alphabetic';
   d.pages.push(cv);d.c=c;d.y=PM;
-  if(demo){c.fillStyle='#FFF1C9';c.fillRect(0,0,PW,24);d.line('بيانات تجريبية (محاكاة): الأرقام تعرض طريقة التحليل ولا تصف جمهور بوليفارد وورلد الحقيقي',0,PW,16,FNT(600,11),'#7A5600',true);d.y=PM+10}
+  if(demo){c.fillStyle='#FFF1C9';c.fillRect(0,0,PW,24);d.line('بيانات محاكاة للديمو: تعليقات اصطناعية وليست من زوار حقيقيين، والأرقام تعرض طريقة التحليل فقط',0,PW,16,FNT(600,11),'#7A5600',true);d.y=PM+10}
  };
  d.wrap=(t,w,f)=>{
   const c=d.c;c.font=f;const out=[];
@@ -345,7 +346,7 @@ function Doc(demo){
   const n=d.pages.length;
   d.pages.forEach((cv,i)=>{
    d.c=cv.getContext('2d');const c=d.c;c.fillStyle=LINEC;c.fillRect(PM,PH-40,CW,1);
-   d.line('مستشار الفعالية · بوليفارد وورلد · فريق beyond limits',PM,CW,PH-22,FNT(400,10.5),MUT);
+   d.line('مستشار الفعالية · '+S.settings.event+' · فريق beyond limits',PM,CW,PH-22,FNT(400,10.5),MUT);
    c.direction='ltr';c.textAlign='left';c.font=FNT(400,10.5);c.fillStyle=MUT;c.fillText((i+1)+' / '+n,PM,PH-22);
   });
  };
@@ -367,14 +368,14 @@ function heroText(){
 function buildReportDoc(){
  computeView();
  const ui=V.ui,c=V.cur,m=mode(),sample=demoOn(),iss=issues(),gd=goods(),recs=ranked(m),ht=heroText();
- const d=Doc(false);
+ const d=Doc(simOn());
  const areaTxt=ui.area==='all'?'كل المناطق':areaName(ui.area);
  d.p('تقرير المنظّم',{size:13,color:MUT});
  d.h1(S.settings.event+' — '+(m==='live'?'تحسينات تقدرون تسوونها الحين':'توصيات للموسم القادم'));
  d.p(sLbl(ui.season)+' · '+perLabel()+' · '+areaTxt,{size:13});
  d.p('حالة الفعالية: '+(m==='live'?'ما زالت قائمة':'انتهت')+' · أُعدّ بتاريخ '+dAr(new Date().toISOString().slice(0,10)),{size:12,color:MUT});
  d.p('المصادر: '+srcTxt()+(S.sources.length&&!sample?' · '+clipT(S.sources.map(s=>s.name).join('، '),90):''),{size:12,color:MUT,after:8});
- d.box([{t:'ملاحظة: هذا التقرير مبني على بيانات مجمّعة سابقًا (ملفات وأمثلة)، وليس على ربط مباشر بأي منصة.'+(sample?' تقييمات قوقل ماب حقيقية نُسخت بلا أسماء. ومنشورات تيك توك وX عناوين فيديوهات ومنشورات جُمعت من بحث عام يوم 20 نوفمبر 2026، وليست تعليقات الزوار.':''),b:1,size:12,c:'#7A5A0C'}],{fill:'#FFF6DD',stroke:'#EAD28B'});
+ d.box([{t:'ملاحظة: هذا التقرير مبني على بيانات مجمّعة سابقًا (ملفات وأمثلة)، وليس على ربط مباشر بأي منصة.'+(sample?' '+BUILTIN[S.eventId].note:''),b:1,size:12,c:'#7A5A0C'}],{fill:'#FFF6DD',stroke:'#EAD28B'});
  const qn=c.N>=100?'جيدة':c.N>=30?'متوسطة':'صغيرة';
  d.box([{t:'حجم العينة: '+qn+' — '+rAr(c.N)+' من '+srcPh(c.clips)+'.'+(c.N<30?' العينة صغيرة، فالنسب للإرشاد فقط ولا تُبنى عليها قرارات كبيرة.':''),b:1}],{fill:c.N<30?'#FFF6DD':'#F4F8FC',stroke:c.N<30?'#EAD28B':LINEC});
 
@@ -490,7 +491,7 @@ async function savePdf(blob,name,n){
  try{const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);toast('جُهّز التقرير ('+n+' صفحات).')}
  catch(e){toast('التنزيل غير متاح في هذا العرض.')}
 }
-const evSlug=()=>(S.eventId==='blvd'?'Boulevard-World':(S.settings.event.replace(/[^0-9A-Za-z]+/g,'-').replace(/^-+|-+$/g,'')||'event'));
+const evSlug=()=>(BUILTIN[S.eventId]?BUILTIN[S.eventId].slug:(S.settings.event.replace(/[^0-9A-Za-z]+/g,'-').replace(/^-+|-+$/g,'')||'event'));
 const repName=()=>evSlug()+'-report-'+(V.ui.season===ALLP?'all-periods':V.ui.season.replace(/[^0-9A-Za-z]+/g,'-').replace(/^-+|-+$/g,'')||'periods')+'.pdf';
 async function loadFonts(){try{await Promise.all([document.fonts.load('400 14px "IBM Plex Sans Arabic"'),document.fonts.load('600 14px "IBM Plex Sans Arabic"')])}catch(e){}}
 /* direct download without preview (used by the chat) */
@@ -524,7 +525,7 @@ async function openPreview(){
   blobs.forEach(b=>urls.push(URL.createObjectURL(b)));
   REP={doc,urls,name:repName(),blob:null};
   body.innerHTML=urls.map((u,i)=>'<img src="'+u+'" alt="صفحة '+(i+1)+' من '+n+' من تقرير المنظّم"><div class="pn">صفحة '+(i+1)+' من '+n+'</div>').join('');
-  $('pvInfo').textContent=n+' صفحات · '+sLbl(V.ui.season)+' · '+(mode()==='live'?'الفعالية قائمة':'الفعالية انتهت')+(demoOn()?' · بيانات الفريق المجمّعة':'');
+  $('pvInfo').textContent=n+' صفحات · '+sLbl(V.ui.season)+' · '+(mode()==='live'?'الفعالية قائمة':'الفعالية انتهت')+(demoOn()?' · '+BUILTIN[S.eventId].flag:'');
   $('pvDl').disabled=false;
   try{$('pvDl').focus({preventScroll:true})}catch(e){}
  }catch(e){
@@ -558,7 +559,7 @@ function wire(){
   if(t.id==='fSeason'||t.id==='fPeriod'||t.id==='fArea'||t.id==='fPlat'){S.ui.season=$('fSeason').value;S.ui.period=$('fPeriod').value;S.ui.area=$('fArea').value;S.ui.plat=$('fPlat').value;persist();renderAll();return}
   if(t.id==='evTop'&&t.value==='__new'){t.value=S.eventId;S.ui.tab='data';UP.newEv=true;persist();renderAll();window.scrollTo(0,0);setTimeout(()=>{const n=$('evName');if(n)n.focus()},60);return}
   if(/^vs(A|Stage|Sent|Plat)$/.test(t.id)){const v=vsState(),k={vsA:'a',vsStage:'stage',vsSent:'sent',vsPlat:'plat'}[t.id];v[k]=t.value;v.n=20;persist();renderVoiceList();return}
-  if(t.id==='evSel'||t.id==='evTop'){const id=t.value;if(id&&id!==S.eventId){saveEv();S.eventId=id;loadEv(id);D=null;PEND=[];UP.newEv=false;ensureSeasons();processAll();persist();renderAll();window.scrollTo(0,0);toast('الفعالية الآن: '+S.settings.event+'.')}return}
+  if(t.id==='evSel'||t.id==='evTop'){const id=t.value;if(id&&id!==S.eventId){saveEv();S.eventId=id;loadEv(id);D=null;PEND=[];UP.newEv=false;ensureSeasons();processAll();persist();renderAll();window.scrollTo(0,0);toast('الفعالية الآن: '+S.settings.event+'.');chatEventNote()}return}
   if(t.id==='fFile'){const fl=Array.from(t.files||[]);t.value='';addFiles(fl);return}
   if(t.id==='upSeason'){UP.season=t.value;renderData();return}
   if(t.id==='upFilter'){UP.filter=t.checked;return}
@@ -595,3 +596,5 @@ ACT.openStage=t=>{S.ui.vs=Object.assign(VS0(),{stage:t.dataset.s});renderVoices(
 ACT.vsMore=()=>{vsState().n+=20;renderVoiceList()};
 ACT.vsReset=()=>{S.ui.vs=VS0();persist();renderVoices()};
 document.addEventListener('input',e=>{if(e.target.id==='vsQ'){vsState().q=e.target.value;vsState().n=20;renderVoiceList()}});
+/* the chat keeps its history, so mark where the event changed: later answers use only the new event's data */
+function chatEventNote(){if(typeof addMsg==='function'&&$('chatLog'))addMsg('a','<div class="body"><div class="small">— الفعالية الآن: «'+esc(S.settings.event)+'». أجاوب من بياناتها فقط. —</div></div>')}
