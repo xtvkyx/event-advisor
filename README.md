@@ -58,6 +58,7 @@ Agent X Hackathon · team **beyond limits** · NEC track: «تحويل الفع�
 
 - [`source/`](source/): أجزاء الملف قبل البناء، و`build.py`، واختبارات المتصفح (`./run-tests.sh`).
 - [`docs/STATUS.md`](docs/STATUS.md): حالة النموذج وحدوده.
+- [`docs/beyond-limits-solution-deck.pdf`](docs/beyond-limits-solution-deck.pdf): الديك المُسلَّم للجولة الأولى (كما سُلِّم).
 
 ## قريبًا (غير مفعّل، وليس من الـ MVP)
 
