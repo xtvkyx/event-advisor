@@ -54,6 +54,11 @@ Agent X Hackathon · team **beyond limits** · NEC track: «تحويل الفع�
 
 الأعمدة المقبولة في الملف المرفوع: `text` (مطلوب)، و`platform` (gmaps أو tiktok أو x، أو تُختار عند الرفع)، و`rating`، و`published_at` أو `date`، و`season`، و`area`، و`url`. ملف مثال على الصيغة فقط: [`sample-data/example-format-only.csv`](sample-data/example-format-only.csv) (جمل مكتوبة للتجربة وليست آراء حقيقية).
 
+## الكود والاختبارات
+
+- [`source/`](source/): أجزاء الملف قبل البناء، و`build.py`، واختبارات المتصفح (`./run-tests.sh`).
+- [`docs/STATUS.md`](docs/STATUS.md): حالة النموذج وحدوده.
+
 ## قريبًا (غير مفعّل، وليس من الـ MVP)
 
 1. **قوقل ماب المباشر:** جمع التقييمات والنجوم تلقائيًا بدل رفع الملفات.
