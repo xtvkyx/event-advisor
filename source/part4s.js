@@ -317,7 +317,9 @@ function platformChart(pl){
 
 /* ---------- voice field hero: every dot is one item; lit dots back the selected complaint ---------- */
 let VF={a:null,items:[]};
-const FIXES=[]; /* this session's corrections: {id,prev} so they can be undone */
+/* this session's corrections per event ({id,prev}), so undo never reaches another event's data */
+const FIXES={};
+const fixLog=()=>FIXES[S.eventId]||(FIXES[S.eventId]=[]);
 function vfIssues(){return issues()}
 function vfSel(){const iss=vfIssues();if(VF.a&&iss.some(o=>o.a===VF.a))return VF.a;return iss[0]?iss[0].a:null}
 function vfLit(a){return i=>opinion(i)&&i.aspects.some(x=>x.a===a&&x.p==='neg')}
@@ -454,7 +456,7 @@ function renderDrawer(){
  const src=D.all?P.items:V.items,srt=(p,q)=>(q.likes-p.likes)||(q.publishedAt||'').localeCompare(p.publishedAt||'');
  const g=src.filter(i=>i.query==='general'&&D.fn(i)).sort(srt),t=src.filter(i=>i.query==='targeted'&&D.fn(i)).sort(srt);
  dr.innerHTML='<div class="dh"><div><h3>'+esc(D.title)+'</h3><div class="small">'+fmt(g.length)+' مادة'+(t.length?' + '+fmt(t.length)+' أمثلة إضافية':'')+' · '+esc(D.all?'كل المواسم':V.ui.season)+'</div></div><button class="btn sm" type="button" data-act="closeEv">إغلاق</button></div>'+
-  '<div class="db">'+(FIXES.length?'<div class="note warn">'+(FIXES.length===1?'صحّحتم تصنيفًا واحدًا':'صحّحتم '+fmt(FIXES.length)+' تصنيفات')+'، والأرقام والتوصيات أُعيد حسابها. <button class="btn sm" type="button" data-act="unfixCls">تراجع عن آخر تصحيح</button></div>':'')+(g.length?g.slice(0,D.g).map(itemCard).join('')+(g.length>D.g?'<button class="btn sm" type="button" data-act="moreEv" data-w="g">عرض المزيد</button>':''):'<div class="empty">لا مواد في هذا النطاق.</div>')+
+  '<div class="db">'+(fixLog().length?'<div class="note warn">'+(fixLog().length===1?'صحّحتم تصنيفًا واحدًا':'صحّحتم '+fmt(fixLog().length)+' تصنيفات')+'، والأرقام والتوصيات أُعيد حسابها. <button class="btn sm" type="button" data-act="unfixCls">تراجع عن آخر تصحيح</button></div>':'')+(g.length?g.slice(0,D.g).map(itemCard).join('')+(g.length>D.g?'<button class="btn sm" type="button" data-act="moreEv" data-w="g">عرض المزيد</button>':''):'<div class="empty">لا مواد في هذا النطاق.</div>')+
   (t.length?'<h4>أمثلة إضافية (بحث موجّه)</h4><div class="note">هذه الأمثلة تشرح الأسباب ولا تدخل في حساب النسب، لأن البحث الموجّه يضخّم الموضوع الذي نبحث عنه.</div>'+t.slice(0,D.t).map(itemCard).join('')+(t.length>D.t?'<button class="btn sm" type="button" data-act="moreEv" data-w="t">عرض المزيد</button>':''):'')+'</div>';
  dr.classList.add('on');$('scrim').classList.add('on');
 }
