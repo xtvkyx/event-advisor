@@ -1,77 +1,84 @@
 # Event Advisor · مستشار الفعالية
 
-Agent X Hackathon · team **beyond limits** · NEC track: «تحويل الفعالية إلى محتوى مستمر»
+English · [العربية](README.ar.md)
 
-**English summary.** Event Advisor is a general-purpose AI event consultant. It analyses visitor opinions collected from Google Maps, TikTok and X, finds recurring complaints and what visitors appreciate, compares platforms, maps findings to the visitor journey, answers questions grounded in the data, and gives organisers recommendations plus a downloadable PDF report. Boulevard World (Riyadh Season) is only the first pilot: the agent is not hard-coded to it, and a new event can be added. The MVP works on **collected data, not live integrations**, and classification is **rule-based** (Saudi Arabic and English), not an LLM.
+Agent X Hackathon · team **beyond limits** · NEC track: "Turning the event into continuous content"
 
-<div dir="rtl">
+## The idea
 
-## الفكرة
+Event Advisor is a general-purpose agent that reads visitor opinions about any event and tells the organiser what visitors ran into and what can be improved. Boulevard World (Riyadh Season) is only the first pilot and is not hard-coded into the logic. The user picks an event or adds a new one, and the agent analyses its data the same way.
 
-مستشار الفعالية وكيل يقرأ آراء الزوار عن أي فعالية، ويعرف المنظّم ما الذي واجه الزوار وما الذي يقدر يحسّنه. بوليفارد وورلد هي أول حالة تجريبية فقط، وليست مكتوبة داخل المنطق. المستخدم يختار فعالية أو يضيف فعالية جديدة، ويحلل الوكيل بياناتها بالطريقة نفسها.
+The MVP works on **collected data, not live integrations**, and classification is **rule-based** (Saudi Arabic and English), not an LLM.
 
-## جرّبوه
+## Try it
 
-افتحوا `index.html` في المتصفح. هو صفحة واحدة بلا تثبيت ولا خادم، ويفتح على بوليفارد وورلد ببيانات مجمّعة. الفعاليات التي تضيفونها وبياناتها تُحفظ في متصفحكم فقط.
+Open `index.html` in a browser. It is a single page with no install and no server, and it opens on Boulevard World with collected data. Events you add, and their data, are stored in your browser only.
 
-1. **ماذا حصل؟** خلاصة آراء الزوار: المشاعر، الشكاوى المتكررة، ما أعجبهم، المواضيع الأكثر ذكرًا، مقارنة المنصات، ورحلة الزائر.
-2. **التوصيات:** تحسينات للمنظّم مع الدليل ومتى ومن ينفّذ وكيف يُقاس الأثر. حالة الفعالية (قائمة أو انتهت) تغيّر صياغتها.
-3. **البيانات:** اختيار الفعالية أو إضافة فعالية جديدة، مصادر البيانات، ورفع ملفات (CSV أو JSON أو TXT) أو لصق تعليقات.
-4. **اسألوا المساعد:** شات يجيب من البيانات فقط (مثل «قارن بين المنصات» و«كيف مشاعر الزوار؟»).
-5. **عرض التقرير (PDF):** معاينة ثم تنزيل تقرير يفهمه من لم يرَ لوحة التحليل.
+1. **What happened?** A summary of visitor opinions: sentiment, recurring complaints, what visitors liked, most-mentioned topics, platform comparison, and the visitor journey. Two charts: the share of visitors who complained per period (approximate), and sentiment per platform.
+2. **Recommendations:** improvements for the organiser, with the evidence, when and who, and how to measure the effect. The event status (ongoing or ended) changes the wording.
+3. **Data:** choose an event or add a new one, see the data sources, upload files (CSV, JSON or TXT) or paste comments.
+4. **Ask the assistant:** a chat that answers from the data only (for example "compare the platforms" or "how do visitors feel?").
+5. **View the report (PDF):** preview, then download a report that makes sense to someone who has not seen the dashboard.
 
-## البيانات المجمّعة (بوليفارد وورلد)
+## Collected data (Boulevard World)
 
-| المنصة | العدد | ملاحظة |
+| Platform | Count | Note |
 | --- | --- | --- |
-| قوقل ماب | 187 تقييمًا | نسخها الفريق بلا أسماء في نوفمبر 2026. 70 منها فيها نجوم |
-| تيك توك | 37 مادة | من بحث عام على الويب يوم 20 نوفمبر 2026: عناوين فيديوهات، وليست تعليقات |
-| X (تويتر) | 9 مواد | المصدر نفسه: منشورات عامة |
+| Google Maps | 187 reviews | Copied by the team without names in November 2026. 70 of them have star ratings |
+| TikTok | 37 items | From a public web search on 20 November 2026: video titles, not comments |
+| Twitter | 9 items | Same source: public posts |
 
-16 مادة من تيك توك وX رسمية أو إعلامية أو إعلانية، لا تُحسب رأي زائر. **لا يوجد اتصال مباشر بأي منصة في هذه النسخة.**
+16 of the TikTok and X items are official, media or advertising content and are not counted as visitor opinion. **There is no live connection to any platform in this version.**
 
-## كيف يحلل
+## How it analyses
 
-- **قواعد لغوية وليست نموذج لغة:** قوائم كلمات للجوانب (الانتظار، الزحام، الدخول، الحجز، الأسعار، الأكل، العروض، البائعون، النظافة، التوجيه) وللمدح والذم، تفهم اللهجة السعودية والإنجليزية. قد تخطئ في العبارات الملتبسة.
-- **المشاعر (إيجابي/محايد/سلبي):** من نجوم قوقل ماب حين تتوفر (4 و5 إيجابي، 3 محايد، 1 و2 سلبي)، وإلا من نص المادة.
-- **قاعدتان تعتمدان على النجوم:** مع 4 أو 5 نجوم لا يُحسب ذكر الزحام أو الانتظار أو البائعين شكوى إلا بكلمة ذم صريحة. ومع نجمة أو نجمتين لا يُحسب المديح إشادة.
-- **التوصية** تظهر فقط إذا تكررت الشكوى 5 مرات على الأقل من 3 مصادر مستقلة.
-- **كل رقم قابل للمراجعة:** الضغط عليه يفتح الأمثلة الحرفية خلفه.
-- **رسمان بيانيان في «ماذا حصل؟»:** نسبة الزوار الذين اشتكوا في كل فترة (تقريبية لأن البيانات بلا تواريخ نشر دقيقة، والنقطة المفرغة تعني أقل من 8 آراء)، وتوزيع المشاعر لكل منصة. الرسمان من أرقام الجداول نفسها بلا أي منطق إضافي.
+- **Language rules, not a language model:** word lists for aspects (waiting, crowding, entry, booking, prices, food, shows, vendors, cleanliness, wayfinding) and for praise and criticism, covering Saudi dialect and English. They can be wrong on ambiguous phrases.
+- **Sentiment (positive / neutral / negative):** from Google Maps stars when available (4 and 5 positive, 3 neutral, 1 and 2 negative), otherwise from the text.
+- **Two star-based rules:** with 4 or 5 stars, a mention of crowding, waiting or vendors only counts as a complaint with an explicit criticism word. With 1 or 2 stars, praise does not count as praise.
+- **A recommendation** appears only if a complaint repeats at least 5 times across at least 3 independent sources.
+- **Every number can be checked:** clicking it opens the verbatim examples behind it.
+- **Two charts in "What happened?":** the share of visitors who complained in each period (approximate, because the data has no exact publish dates, and a hollow point means fewer than 8 opinions), and sentiment per platform. Both are drawn from the same numbers as the tables, with no extra logic.
 
-## التقنيات | Tech stack
+## Tech stack
 
-- **HTML وCSS وJavaScript** في ملف واحد (`index.html`): الشكل داخل وسم `<style>` والمنطق داخل `<script>`. لذلك تعرض GitHub اللغة «HTML 100%».
-- **بدون مكتبات ولا خادم ولا نموذج لغوي ولا واجهات API:** كل التحليل يجري داخل المتصفح بقواعد وقوائم كلمات.
-- **البيانات** مجمّعة مسبقًا ومضمّنة في الملف (قوقل ماب وتيك توك وX). الفعاليات التي يضيفها المستخدم تُحفظ في متصفحه فقط (`localStorage`).
-- **تقرير PDF** يُرسم ويُولَّد داخل المتصفح.
+- **HTML, CSS and JavaScript** in one file (`index.html`): styles in a `<style>` tag and logic in a `<script>` tag. That is why GitHub reports "HTML 100%".
+- **No libraries, server, language model or APIs:** all analysis runs in the browser with rules and word lists.
+- **Data** is collected beforehand and embedded in the file (Google Maps, TikTok, X). Events added by the user are stored in their browser only (`localStorage`).
+- **The PDF report** is drawn and generated in the browser.
 
-*English:* a single `index.html` using plain HTML, CSS and JavaScript (styles in `<style>`, logic in `<script>`), which is why GitHub reports "HTML 100%". No libraries, server, LLM or API calls: all analysis is rule-based and runs in the browser on pre-collected data. User-added events are stored in the browser's `localStorage`. The PDF report is generated client-side.
+## Architecture: add a source without rebuilding
 
-## البنية: إضافة مصدر بدون إعادة بناء
+Every source becomes one unified row (text, platform, date, stars if present, event) and goes through the same analysis pipeline. So platform comparison, sentiment and recommendations work for any new source without changing the logic.
 
-كل مصدر يتحول إلى صف موحّد (النص، المنصة، التاريخ، النجوم إن وجدت، الفعالية)، ثم يمر في خط التحليل نفسه. لذلك المقارنة بين المنصات والمشاعر والتوصيات تعمل لأي مصدر جديد دون تغيير المنطق.
+Columns accepted in an uploaded file: `text` (required), `platform` (gmaps, tiktok or x, or chosen at upload), `rating`, `published_at` or `date`, `season`, `area`, and `url`. A sample that shows the format only: [`sample-data/example-format-only.csv`](sample-data/example-format-only.csv) (sentences written for testing, not real opinions).
 
-الأعمدة المقبولة في الملف المرفوع: `text` (مطلوب)، و`platform` (gmaps أو tiktok أو x، أو تُختار عند الرفع)، و`rating`، و`published_at` أو `date`، و`season`، و`area`، و`url`. ملف مثال على الصيغة فقط: [`sample-data/example-format-only.csv`](sample-data/example-format-only.csv) (جمل مكتوبة للتجربة وليست آراء حقيقية).
+## Team: beyond limits
 
-## الكود والاختبارات
+| Name | Role |
+| --- | --- |
+| غلا الشريف | Team lead, presentation |
+| لميس الجبلي | Data collection |
+| زهى الرويس | Data analysis |
+| غيداء بن معدي | Agent development |
+| ميس الحماد | Interface design |
 
-- [`source/`](source/): أجزاء الملف قبل البناء، و`build.py`، واختبارات المتصفح (`./run-tests.sh`).
-- [`docs/STATUS.md`](docs/STATUS.md): حالة النموذج وحدوده.
+## Code and tests
 
-## قريبًا (غير مفعّل، وليس من الـ MVP)
+- [`source/`](source/): the file's parts before the build, `build.py`, and browser tests (`./run-tests.sh`).
+- [`docs/STATUS.md`](docs/STATUS.md): prototype status and limits (in Arabic).
+- [`docs/beyond-limits-solution-deck.pdf`](docs/beyond-limits-solution-deck.pdf): the deck submitted for round one, as submitted (in Arabic).
 
-1. **قوقل ماب المباشر:** جمع التقييمات والنجوم تلقائيًا بدل رفع الملفات.
-2. **الكاميرات:** استخدام بيانات الكاميرات الجاهزة (أعداد الزوار وحركة الحشود) وربطها بآراء الزوار، بشرط الخصوصية والموافقات. لا تحكّم مباشر بالكاميرات.
-3. **رفع تقاريركم:** رفع تقارير ومستندات المنظّم لدمجها مع ما يعرفه الوكيل.
+## Coming soon (not enabled, not part of the MVP)
 
-هذه الثلاثة معروضة في الواجهة كـ«قريبًا» ومعطّلة. ولم يُبنَ بعد أيضًا حفظ الدروس تلقائيًا من موسم إلى موسم.
+1. **Live Google Maps:** collect reviews and stars automatically instead of uploading files.
+2. **Cameras:** use existing camera data (visitor counts and crowd movement) and link it to visitor opinions, subject to privacy and consent. No direct control of cameras.
+3. **Upload your reports:** upload the organiser's reports and documents to combine with what the agent knows.
 
-## حدود يجب ذكرها
+These three are shown in the interface as "coming soon" and are disabled. Automatically saving lessons from one season to the next has also not been built.
 
-- تقييمات قوقل ماب عينة منتقاة وليست عشوائية، وأسماء الفترات تقريبية حسب عمر التقييم.
-- تيك توك وX هنا عناوين ومنشورات من صنّاع محتوى وإعلام، فهي إشارة مبدئية وليست قياسًا لرأي الزوار.
-- التصنيف بقواعد وقد يخطئ، ولذلك تُعرض الأمثلة خلف كل رقم.
-- تقرير PDF مبني من صور الصفحات (النص غير قابل للتحديد).
+## Limits worth stating
 
-</div>
+- The Google Maps reviews are a selected sample, not a random one, and the period names are approximate (based on the age of the review).
+- TikTok and X items here are titles and posts from content creators and media, so they are an early signal, not a measure of visitor opinion.
+- Classification is rule-based and can be wrong, which is why the examples are shown behind every number.
+- The PDF report is built from page images (the text cannot be selected).
