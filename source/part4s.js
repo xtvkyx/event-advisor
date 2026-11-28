@@ -314,6 +314,58 @@ function platformChart(pl){
   '<div class="sbx" role="img" aria-label="'+esc(PLAT[x.p]+': إيجابي '+Math.round(x.sent.pos/x.sent.n*100)+'% ومحايد '+Math.round(x.sent.neu/x.sent.n*100)+'% وسلبي '+Math.round(x.sent.neg/x.sent.n*100)+'%')+'">'+seg('p',x.sent.n,x.sent.pos)+seg('u',x.sent.n,x.sent.neu)+seg('g',x.sent.n,x.sent.neg)+'</div></div>').join('')+
   '<div class="legend" style="margin-top:4px"><span><i class="sq" style="background:var(--ok)"></i>إيجابي</span><span><i class="sq" style="background:var(--mut)"></i>محايد</span><span><i class="sq" style="background:var(--bad)"></i>سلبي</span></div></div>';
 }
+
+/* ---------- voice field hero: every dot is one item; lit dots back the selected complaint ---------- */
+let VF={a:null,items:[]};
+const FIXES=[]; /* this session's corrections: {id,prev} so they can be undone */
+function vfIssues(){return issues()}
+function vfSel(){const iss=vfIssues();if(VF.a&&iss.some(o=>o.a===VF.a))return VF.a;return iss[0]?iss[0].a:null}
+function vfLit(a){return i=>opinion(i)&&i.aspects.some(x=>x.a===a&&x.p==='neg')}
+function vfCard(a){
+ const c=V.cur,m=mode();
+ if(!a)return '<div class="vf-card"><div class="vf-act">ما فيه شكوى تكررت بما يكفي بعد</div><div class="small">نعرض الشكوى هنا إذا تكررت 3 مرات على الأقل من مصدرين مستقلين.</div></div>';
+ const x=c.A[a],rec=V.recs.find(r=>r.a===a),lab=ASPECTS[a].label;
+ const ev=evKey(lab+': ما أزعج الزوار',i=>vis(i)&&i.aspects.some(z=>z.a===a&&z.p==='neg'));
+ let h='<div class="vf-card"><div class="vf-n">'+fmt(x.neg)+' <small>'+(x.neg===1?'صوت':'أصوات')+' تشتكي من '+esc(lab)+'</small></div>';
+ if(rec){const saved=S.saved.find(z=>z.key===rec.key);
+  h+='<div class="vf-act">'+esc(planOf(rec,m))+'</div><div class="vf-facts"><span>'+esc(rec.team)+'</span><span>الهدف '+pn(rec.kpi.base)+' ← '+pn(rec.kpi.target)+'</span><span>'+esc(whenTxt(rec,m))+'</span></div>'+
+   '<div class="vf-btns"><button class="btn coral" type="button" data-act="ev" data-k="'+ev+'">اسمع الأصوات</button><button class="btn'+(saved?' on':'')+'" type="button" data-act="saveRec" data-key="'+esc(rec.key)+'">'+(saved?'في الخطة ✓':'أضيفوها للخطة')+'</button></div>';
+ }else{
+  h+='<div class="vf-act" style="color:var(--warn)">ما فيه توصية بعد</div><div class="small">التوصية تحتاج 5 شكاوى على الأقل من 3 مصادر مستقلة. عندكم '+fmt(x.neg)+(x.neg===1?' شكوى':' شكاوى')+' من '+mq(x.negClips.size)+'. أضيفوا تعليقات أكثر.</div>'+
+   '<div class="vf-btns"><button class="btn coral" type="button" data-act="ev" data-k="'+ev+'">اسمع الأصوات</button><button class="btn" type="button" data-act="tab" data-v="data">إضافة بيانات</button></div>';
+ }
+ return h+'</div>';
+}
+function vfHead(a){
+ const c=V.cur,iss=vfIssues();
+ if(!iss.length)return '<p class="vf-h">لا توجد شكوى تتكرر بوضوح</p><div class="vf-sub">'+rAr(c.N)+' في هذا النطاق.</div>';
+ const me=iss.find(o=>o.a===a),topN=iss[0].n,isTop=me.n===topN,tie=isTop?iss.filter(o=>o.n===topN&&o.a!==a):[];
+ return '<p class="vf-h">'+(isTop?'أكثر ما اشتكى منه الزوار: ':'شكوى الزوار من ')+'<em>'+esc(ASPECTS[a].label)+'</em></p>'+
+  '<div class="vf-sub">'+fmt(me.n)+' من '+rAr(c.N)+(tie.length?' · متعادل مع '+tie.map(o=>ASPECTS[o.a].label).join(' و'):'')+(c.N<15?' · العينة صغيرة، فالأرقام اتجاه مبدئي':'')+'</div>';
+}
+function vfHero(){
+ const c=V.cur,iss=vfIssues(),a=vfSel();VF.a=a;
+ const srt=(p,q)=>hash(p.id)<hash(q.id)?-1:1;
+ VF.items=V.items.slice().sort(srt);
+ const lit=a?vfLit(a):()=>false;
+ const dots=VF.items.map((i,k)=>'<button type="button" data-act="vfDot" data-id="'+esc(i.id)+'" class="'+(!opinion(i)?'h':lit(i)?'on':'')+'" aria-label="'+(opinion(i)?'رأي زائر':'مادة لا تُحسب')+'"></button>').join('');
+ const q=c.N>=100?['عينة جيدة','ok']:c.N>=30?['عينة متوسطة','warn']:['عينة صغيرة','bad'];
+ return '<div class="vf" id="vf"><div class="pill">'+chip(q[0]+' · '+rAr(c.N),q[1])+chip(sLbl(V.ui.season))+chip(perLabel())+(V.ui.area!=='all'?chip(areaName(V.ui.area)):'')+(demoOn()?'<span class="demo-flag">بيانات ديمو</span>':'')+'</div>'+
+  '<div id="vfHead">'+vfHead(a)+'</div>'+
+  (iss.length?'<div class="vf-chips" role="group" aria-label="اختاروا الشكوى">'+iss.map(o=>'<button type="button" data-act="vfAsp" data-a="'+o.a+'" aria-pressed="'+(o.a===a)+'">'+esc(ASPECTS[o.a].label)+' '+fmt(o.n)+'</button>').join('')+'</div>':'')+
+  '<div class="vf-main"><div><div class="field" id="field">'+dots+'</div>'+
+  '<div class="vf-leg"><span><i style="background:var(--coral)"></i>يشتكي من الشكوى المختارة</span><span><i style="background:var(--dot)"></i>رأي زائر محسوب</span><span><i style="box-shadow:inset 0 0 0 1.5px var(--hollow)"></i>لا يُحسب (رسمي، سؤال، أو تصنيف غير مؤكد)</span></div></div>'+
+  '<div id="vfCard">'+vfCard(a)+'</div></div></div>';
+}
+function vfSelect(a){
+ if(!a||!vfIssues().some(o=>o.a===a))return;
+ VF.a=a;const lit=vfLit(a),f=$('field');if(!f)return;
+ [...f.children].forEach((b,k)=>{const i=VF.items[k];b.classList.remove('ask');b.classList.toggle('on',!!i&&lit(i))});
+ $('vfHead').innerHTML=vfHead(a);$('vfCard').innerHTML=vfCard(a);
+ document.querySelectorAll('.vf-chips button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.a===a?'true':'false'));
+}
+/* light the dots an answer used (mint), without changing the selected complaint */
+function vfGlow(fn){const f=$('field');if(!f)return;[...f.children].forEach((b,k)=>{const i=VF.items[k];b.classList.toggle('ask',!!i&&fn(i))})}
 function renderHappened(){
  if(!P.items.length){$('p-happened').innerHTML=emptyEvent();return}
  const c=V.cur,ui=V.ui,m=mode(),iss=issues(),gd=goods(),qs=questions(),top=iss[0];
@@ -330,8 +382,8 @@ function renderHappened(){
  const ar=areaTable();
  const qHtml=qs.length?qs.map(z=>'<div class="row" style="justify-content:space-between;border-top:1px solid var(--line);padding:6px 0"><span>«'+esc(TOPIC[z.t].label)+'»: '+esc(mq(z.clips))+' تسأل عنها</span>'+evBtn(evKey('أسئلة الزوار: '+TOPIC[z.t].label,i=>i.intent==='planning'&&i.topic===z.t),'أمثلة')+'</div>').join(''):'<div class="small">لا سؤال يتكرر بما يكفي.</div>';
  $('p-happened').innerHTML='<div class="stack">'+
-  '<div class="hero"><div class="pill">'+chip(q[0]+' · '+rAr(c.N),q[1])+chip(sLbl(ui.season))+chip(perLabel())+(ui.area!=='all'?chip(areaName(ui.area)):'')+(demoOn()?'<span class="demo-flag">بيانات ديمو</span>':'')+'</div>'+
-   '<h2>'+esc(head)+'</h2>'+(sub?'<p class="sub">'+esc(sub)+'</p>':'')+'</div>'+
+  vfHero()+
+  (sub?'<p class="small">'+esc(sub)+'</p>':'')+
   '<div class="grid g3">'+
    '<div class="card stat"><span class="lb">آراء الزوار في هذا النطاق</span><span class="big">'+fmt(c.N)+'</span><span class="small">من '+srcPh(c.clips)+(c.official?' · استبعدنا '+fmt(c.official)+' مادة رسمية أو إعلانية':'')+'</span></div>'+
    '<div class="card stat"><span class="lb">اشتكوا من شيء</span><span class="big">'+(c.N?pc(c.negAny/c.N):'—')+'</span><span class="small">'+fmt(c.negAny)+' من '+fmt(c.N)+'</span></div>'+
@@ -390,7 +442,7 @@ function renderRecs(){
 
 /* ---------- evidence drawer ---------- */
 function itemCard(it){
- const asp=it.intent==='planning'?chip('سؤال: '+(TOPIC[it.topic]||{label:''}).label):it.intent==='official'?chip('رسمي / إعلاني','warn'):it.aspects.map(x=>chip((ASPECTS[x.a]?ASPECTS[x.a].label:x.a)+' · '+(x.p==='neg'?'سلبي':x.p==='pos'?'إيجابي':x.p==='mix'?'مختلط':'ذكر'),x.p==='neg'?'bad':x.p==='pos'?'ok':'mut')).join('');
+ const asp=it.intent==='planning'?chip('سؤال: '+(TOPIC[it.topic]||{label:''}).label):it.intent==='official'?chip('رسمي / إعلاني','warn'):it.aspects.map(x=>chip((ASPECTS[x.a]?ASPECTS[x.a].label:x.a)+' · '+(x.p==='neg'?'سلبي':x.p==='pos'?'إيجابي':x.p==='mix'?'مختلط':'ذكر'),x.p==='neg'?'bad':x.p==='pos'?'ok':'mut')+(x.p==='neg'&&ASPECTS[x.a]?' <button class="fixb" type="button" data-act="fixCls" data-id="'+esc(it.id)+'" data-a="'+x.a+'" title="لا تحسبوا هذا الرأي شكوى من '+esc(ASPECTS[x.a].label)+'">التصنيف خطأ</button>':'')).join('');
  const link=/^https?:\/\//.test(it.url||'')?'<a href="'+esc(it.url)+'" target="_blank" rel="noopener noreferrer">فتح الرابط</a>':(it.demo?'<span>رابط تجريبي</span>':'');
  return '<div class="ev"><div class="row">'+chip(it.season)+(it.stars?chip(it.stars+' من 5','mut'):'')+(it.platform?chip(PLAT[it.platform]||'','mut'):'')+(it.day?chip('اليوم '+it.day,'mut'):chip(it.publishedAt?'خارج أيام الموسم':'بلا تاريخ نشر','mut'))+chip(areaName(it.area),'mut')+asp+(it.uncertain?chip('غير محسوم','warn'):'')+(it.demo?chip('تجريبي','warn'):'')+'</div>'+
   '<div class="tx'+(isEn(it.text)?' en':'')+'">'+esc(it.text)+'</div>'+
@@ -402,7 +454,7 @@ function renderDrawer(){
  const src=D.all?P.items:V.items,srt=(p,q)=>(q.likes-p.likes)||(q.publishedAt||'').localeCompare(p.publishedAt||'');
  const g=src.filter(i=>i.query==='general'&&D.fn(i)).sort(srt),t=src.filter(i=>i.query==='targeted'&&D.fn(i)).sort(srt);
  dr.innerHTML='<div class="dh"><div><h3>'+esc(D.title)+'</h3><div class="small">'+fmt(g.length)+' مادة'+(t.length?' + '+fmt(t.length)+' أمثلة إضافية':'')+' · '+esc(D.all?'كل المواسم':V.ui.season)+'</div></div><button class="btn sm" type="button" data-act="closeEv">إغلاق</button></div>'+
-  '<div class="db">'+(g.length?g.slice(0,D.g).map(itemCard).join('')+(g.length>D.g?'<button class="btn sm" type="button" data-act="moreEv" data-w="g">عرض المزيد</button>':''):'<div class="empty">لا مواد في هذا النطاق.</div>')+
+  '<div class="db">'+(FIXES.length?'<div class="note warn">'+(FIXES.length===1?'صحّحتم تصنيفًا واحدًا':'صحّحتم '+fmt(FIXES.length)+' تصنيفات')+'، والأرقام والتوصيات أُعيد حسابها. <button class="btn sm" type="button" data-act="unfixCls">تراجع عن آخر تصحيح</button></div>':'')+(g.length?g.slice(0,D.g).map(itemCard).join('')+(g.length>D.g?'<button class="btn sm" type="button" data-act="moreEv" data-w="g">عرض المزيد</button>':''):'<div class="empty">لا مواد في هذا النطاق.</div>')+
   (t.length?'<h4>أمثلة إضافية (بحث موجّه)</h4><div class="note">هذه الأمثلة تشرح الأسباب ولا تدخل في حساب النسب، لأن البحث الموجّه يضخّم الموضوع الذي نبحث عنه.</div>'+t.slice(0,D.t).map(itemCard).join('')+(t.length>D.t?'<button class="btn sm" type="button" data-act="moreEv" data-w="t">عرض المزيد</button>':''):'')+'</div>';
  dr.classList.add('on');$('scrim').classList.add('on');
 }

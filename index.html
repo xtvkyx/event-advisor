@@ -1,18 +1,21 @@
+<meta charset="utf-8">
 <title>مستشار الفعالية</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Readex+Pro:wght@500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Alexandria:wght@600;700;800&display=swap">
 <style>
-/* Simple three-step layout: 1 data (status + files) -> 2 what happened -> 3 recommendations + PDF report. Dark, RTL. */
+/* Night "voice field" theme: sky background, coral = problems, mint = actions, amber = warnings. RTL. */
 :root{
-  --bg:#0B1220; --panel:#111C30; --panel2:#17263F; --line:#223552; --fg:#E8EEF8; --mut:#93A6C4;
-  --acc:#5CCBDD; --accd:#10404B; --bad:#F2917F; --badbg:#3A2422; --ok:#74D8A4; --okbg:#143027;
-  --warn:#F1C566; --warnbg:#392F16; --info:#86A9FF; --infobg:#1A2745;
-  --fb:'IBM Plex Sans Arabic','Segoe UI',Tahoma,Arial,sans-serif; --fh:'Readex Pro','IBM Plex Sans Arabic','Segoe UI',Tahoma,Arial,sans-serif;
+  --bg:#0C1124; --sky2:#111830; --sky3:#22305A;
+  --panel:#141C36; --panel2:#1B2546; --line:#2A3760; --fg:#EEF2FB; --mut:#9FB0D0;
+  --acc:#6FD6A8; --accd:#123A30; --bad:#FF7A5C; --badbg:#3A1F1A; --ok:#6FD6A8; --okbg:#123A30;
+  --warn:#F5C26B; --warnbg:#3A2E16; --info:#9DB8FF; --infobg:#1C2850;
+  --dot:#4E5D85; --hollow:#46557C; --coral:#FF7A5C; --mint:#6FD6A8;
+  --fb:'IBM Plex Sans Arabic','Segoe UI',Tahoma,Arial,sans-serif; --fh:'Alexandria','IBM Plex Sans Arabic','Segoe UI',Tahoma,Arial,sans-serif;
   color-scheme:dark;
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--fb);font-size:15px;line-height:1.7;
+body{margin:0;background:radial-gradient(120% 70% at 85% 0%,var(--sky3) 0%,var(--sky2) 45%,var(--bg) 100%) fixed,var(--bg);color:var(--fg);font-family:var(--fb);font-size:15px;line-height:1.7;
   padding-block:0 72px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:60}
 h1,h2,h3,h4{font-family:var(--fh);margin:0;font-weight:600;text-wrap:balance}
@@ -23,7 +26,7 @@ a{color:var(--acc)}
 .wrap{max-width:980px;margin:0 auto}
 .top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:22px 0 8px}
 .brand{display:flex;gap:12px;align-items:center;min-width:0}
-.logo{width:44px;height:44px;border-radius:12px;background:var(--accd);color:var(--acc);display:grid;place-items:center;font:600 20px var(--fh);flex:none}
+.logo{width:44px;height:44px;border-radius:12px;background:var(--coral);color:#1A0E08;display:grid;place-items:center;font:600 20px var(--fh);flex:none}
 .brand h1{font-size:22px;line-height:1.3}
 .brand p{color:var(--mut);font-size:13px}
 .btn{cursor:pointer;border:1px solid var(--line);background:var(--panel2);border-radius:10px;padding:8px 16px;line-height:1.4}
@@ -195,6 +198,36 @@ body.chat-open .chat-fab{display:none}
 body.pv-open{overflow:hidden}
 @media (max-width:640px){.kv{grid-template-columns:1fr;gap:0}.kv dt{font-size:12.5px;margin-top:8px}.tab{flex-direction:column;gap:4px;padding:8px 4px;text-align:center;font-size:13.5px}.top{padding-top:14px}.hero h2{font-size:20px}.rw{grid-template-columns:1fr auto}.rw .bar{grid-column:1/-1;order:3}.brand h1{font-size:19px}.fld select{min-width:0;width:100%}.fld{flex:1 1 140px}}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.drawer{transition:none}}
+
+/* ---------- voice field hero ---------- */
+.vf{background:linear-gradient(160deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.11);border-radius:20px;padding:20px 22px;display:grid;gap:16px}
+.vf-h{font-family:var(--fh);font-weight:800;font-size:clamp(22px,3.4vw,32px);line-height:1.35;margin:0}
+.vf-h em{font-style:normal;color:var(--coral)}
+.vf-sub{color:var(--mut);font-size:14.5px;margin-top:2px}
+.vf-chips{display:flex;gap:8px;flex-wrap:wrap}
+.vf-chips button{cursor:pointer;font-size:13.5px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.05);padding:5px 14px}
+.vf-chips button[aria-pressed="true"]{background:var(--coral);border-color:var(--coral);color:#1A0E08;font-weight:700}
+.vf-main{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:820px){.vf-main{grid-template-columns:1fr}}
+.field{display:grid;grid-template-columns:repeat(24,minmax(0,1fr));gap:5px;direction:ltr}
+@media (max-width:560px){.field{grid-template-columns:repeat(16,minmax(0,1fr));gap:4px}}
+.field button{all:unset;cursor:pointer;aspect-ratio:1;border-radius:50%;background:var(--dot);transition:transform .45s cubic-bezier(.2,.8,.2,1),background .3s,box-shadow .3s}
+.field button.h{background:transparent;box-shadow:inset 0 0 0 1.5px var(--hollow)}
+.field button.on{background:var(--coral);transform:scale(1.55);box-shadow:0 0 12px 2px rgba(255,122,92,.5)}
+.field button.ask{background:var(--mint);transform:scale(1.55);box-shadow:0 0 12px 2px rgba(111,214,168,.5)}
+.field button:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.field button{transition:none}}
+.vf-leg{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--mut);margin-top:10px}
+.vf-leg i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-inline-end:6px;vertical-align:-1px}
+.vf-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.11);border-radius:16px;padding:16px;display:grid;gap:10px;align-content:start}
+.vf-n{font-family:var(--fh);font-size:44px;font-weight:800;color:var(--coral);line-height:1}
+.vf-n small{font-size:14px;color:var(--mut);font-family:var(--fb);font-weight:500}
+.vf-act{font-family:var(--fh);font-size:18px;font-weight:700;line-height:1.5}
+.vf-facts{display:flex;gap:6px;flex-wrap:wrap}
+.vf-facts span{font-size:12.5px;background:rgba(255,255,255,.07);border-radius:999px;padding:2px 10px;white-space:nowrap}
+.vf-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btn.coral{background:var(--coral);border-color:var(--coral);color:#1A0E08;font-weight:700}
+.fixb{cursor:pointer;font-size:12px;border-radius:8px;border:1px solid var(--warn);background:transparent;color:var(--warn);padding:1px 9px}
 </style>
 
 <div class="wrap" id="app" dir="rtl" lang="ar">
@@ -1013,6 +1046,58 @@ function platformChart(pl){
   '<div class="sbx" role="img" aria-label="'+esc(PLAT[x.p]+': إيجابي '+Math.round(x.sent.pos/x.sent.n*100)+'% ومحايد '+Math.round(x.sent.neu/x.sent.n*100)+'% وسلبي '+Math.round(x.sent.neg/x.sent.n*100)+'%')+'">'+seg('p',x.sent.n,x.sent.pos)+seg('u',x.sent.n,x.sent.neu)+seg('g',x.sent.n,x.sent.neg)+'</div></div>').join('')+
   '<div class="legend" style="margin-top:4px"><span><i class="sq" style="background:var(--ok)"></i>إيجابي</span><span><i class="sq" style="background:var(--mut)"></i>محايد</span><span><i class="sq" style="background:var(--bad)"></i>سلبي</span></div></div>';
 }
+
+/* ---------- voice field hero: every dot is one item; lit dots back the selected complaint ---------- */
+let VF={a:null,items:[]};
+const FIXES=[]; /* this session's corrections: {id,prev} so they can be undone */
+function vfIssues(){return issues()}
+function vfSel(){const iss=vfIssues();if(VF.a&&iss.some(o=>o.a===VF.a))return VF.a;return iss[0]?iss[0].a:null}
+function vfLit(a){return i=>opinion(i)&&i.aspects.some(x=>x.a===a&&x.p==='neg')}
+function vfCard(a){
+ const c=V.cur,m=mode();
+ if(!a)return '<div class="vf-card"><div class="vf-act">ما فيه شكوى تكررت بما يكفي بعد</div><div class="small">نعرض الشكوى هنا إذا تكررت 3 مرات على الأقل من مصدرين مستقلين.</div></div>';
+ const x=c.A[a],rec=V.recs.find(r=>r.a===a),lab=ASPECTS[a].label;
+ const ev=evKey(lab+': ما أزعج الزوار',i=>vis(i)&&i.aspects.some(z=>z.a===a&&z.p==='neg'));
+ let h='<div class="vf-card"><div class="vf-n">'+fmt(x.neg)+' <small>'+(x.neg===1?'صوت':'أصوات')+' تشتكي من '+esc(lab)+'</small></div>';
+ if(rec){const saved=S.saved.find(z=>z.key===rec.key);
+  h+='<div class="vf-act">'+esc(planOf(rec,m))+'</div><div class="vf-facts"><span>'+esc(rec.team)+'</span><span>الهدف '+pn(rec.kpi.base)+' ← '+pn(rec.kpi.target)+'</span><span>'+esc(whenTxt(rec,m))+'</span></div>'+
+   '<div class="vf-btns"><button class="btn coral" type="button" data-act="ev" data-k="'+ev+'">اسمع الأصوات</button><button class="btn'+(saved?' on':'')+'" type="button" data-act="saveRec" data-key="'+esc(rec.key)+'">'+(saved?'في الخطة ✓':'أضيفوها للخطة')+'</button></div>';
+ }else{
+  h+='<div class="vf-act" style="color:var(--warn)">ما فيه توصية بعد</div><div class="small">التوصية تحتاج 5 شكاوى على الأقل من 3 مصادر مستقلة. عندكم '+fmt(x.neg)+(x.neg===1?' شكوى':' شكاوى')+' من '+mq(x.negClips.size)+'. أضيفوا تعليقات أكثر.</div>'+
+   '<div class="vf-btns"><button class="btn coral" type="button" data-act="ev" data-k="'+ev+'">اسمع الأصوات</button><button class="btn" type="button" data-act="tab" data-v="data">إضافة بيانات</button></div>';
+ }
+ return h+'</div>';
+}
+function vfHead(a){
+ const c=V.cur,iss=vfIssues();
+ if(!iss.length)return '<p class="vf-h">لا توجد شكوى تتكرر بوضوح</p><div class="vf-sub">'+rAr(c.N)+' في هذا النطاق.</div>';
+ const me=iss.find(o=>o.a===a),topN=iss[0].n,isTop=me.n===topN,tie=isTop?iss.filter(o=>o.n===topN&&o.a!==a):[];
+ return '<p class="vf-h">'+(isTop?'أكثر ما اشتكى منه الزوار: ':'شكوى الزوار من ')+'<em>'+esc(ASPECTS[a].label)+'</em></p>'+
+  '<div class="vf-sub">'+fmt(me.n)+' من '+rAr(c.N)+(tie.length?' · متعادل مع '+tie.map(o=>ASPECTS[o.a].label).join(' و'):'')+(c.N<15?' · العينة صغيرة، فالأرقام اتجاه مبدئي':'')+'</div>';
+}
+function vfHero(){
+ const c=V.cur,iss=vfIssues(),a=vfSel();VF.a=a;
+ const srt=(p,q)=>hash(p.id)<hash(q.id)?-1:1;
+ VF.items=V.items.slice().sort(srt);
+ const lit=a?vfLit(a):()=>false;
+ const dots=VF.items.map((i,k)=>'<button type="button" data-act="vfDot" data-id="'+esc(i.id)+'" class="'+(!opinion(i)?'h':lit(i)?'on':'')+'" aria-label="'+(opinion(i)?'رأي زائر':'مادة لا تُحسب')+'"></button>').join('');
+ const q=c.N>=100?['عينة جيدة','ok']:c.N>=30?['عينة متوسطة','warn']:['عينة صغيرة','bad'];
+ return '<div class="vf" id="vf"><div class="pill">'+chip(q[0]+' · '+rAr(c.N),q[1])+chip(sLbl(V.ui.season))+chip(perLabel())+(V.ui.area!=='all'?chip(areaName(V.ui.area)):'')+(demoOn()?'<span class="demo-flag">بيانات ديمو</span>':'')+'</div>'+
+  '<div id="vfHead">'+vfHead(a)+'</div>'+
+  (iss.length?'<div class="vf-chips" role="group" aria-label="اختاروا الشكوى">'+iss.map(o=>'<button type="button" data-act="vfAsp" data-a="'+o.a+'" aria-pressed="'+(o.a===a)+'">'+esc(ASPECTS[o.a].label)+' '+fmt(o.n)+'</button>').join('')+'</div>':'')+
+  '<div class="vf-main"><div><div class="field" id="field">'+dots+'</div>'+
+  '<div class="vf-leg"><span><i style="background:var(--coral)"></i>يشتكي من الشكوى المختارة</span><span><i style="background:var(--dot)"></i>رأي زائر محسوب</span><span><i style="box-shadow:inset 0 0 0 1.5px var(--hollow)"></i>لا يُحسب (رسمي، سؤال، أو تصنيف غير مؤكد)</span></div></div>'+
+  '<div id="vfCard">'+vfCard(a)+'</div></div></div>';
+}
+function vfSelect(a){
+ if(!a||!vfIssues().some(o=>o.a===a))return;
+ VF.a=a;const lit=vfLit(a),f=$('field');if(!f)return;
+ [...f.children].forEach((b,k)=>{const i=VF.items[k];b.classList.remove('ask');b.classList.toggle('on',!!i&&lit(i))});
+ $('vfHead').innerHTML=vfHead(a);$('vfCard').innerHTML=vfCard(a);
+ document.querySelectorAll('.vf-chips button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.a===a?'true':'false'));
+}
+/* light the dots an answer used (mint), without changing the selected complaint */
+function vfGlow(fn){const f=$('field');if(!f)return;[...f.children].forEach((b,k)=>{const i=VF.items[k];b.classList.toggle('ask',!!i&&fn(i))})}
 function renderHappened(){
  if(!P.items.length){$('p-happened').innerHTML=emptyEvent();return}
  const c=V.cur,ui=V.ui,m=mode(),iss=issues(),gd=goods(),qs=questions(),top=iss[0];
@@ -1029,8 +1114,8 @@ function renderHappened(){
  const ar=areaTable();
  const qHtml=qs.length?qs.map(z=>'<div class="row" style="justify-content:space-between;border-top:1px solid var(--line);padding:6px 0"><span>«'+esc(TOPIC[z.t].label)+'»: '+esc(mq(z.clips))+' تسأل عنها</span>'+evBtn(evKey('أسئلة الزوار: '+TOPIC[z.t].label,i=>i.intent==='planning'&&i.topic===z.t),'أمثلة')+'</div>').join(''):'<div class="small">لا سؤال يتكرر بما يكفي.</div>';
  $('p-happened').innerHTML='<div class="stack">'+
-  '<div class="hero"><div class="pill">'+chip(q[0]+' · '+rAr(c.N),q[1])+chip(sLbl(ui.season))+chip(perLabel())+(ui.area!=='all'?chip(areaName(ui.area)):'')+(demoOn()?'<span class="demo-flag">بيانات ديمو</span>':'')+'</div>'+
-   '<h2>'+esc(head)+'</h2>'+(sub?'<p class="sub">'+esc(sub)+'</p>':'')+'</div>'+
+  vfHero()+
+  (sub?'<p class="small">'+esc(sub)+'</p>':'')+
   '<div class="grid g3">'+
    '<div class="card stat"><span class="lb">آراء الزوار في هذا النطاق</span><span class="big">'+fmt(c.N)+'</span><span class="small">من '+srcPh(c.clips)+(c.official?' · استبعدنا '+fmt(c.official)+' مادة رسمية أو إعلانية':'')+'</span></div>'+
    '<div class="card stat"><span class="lb">اشتكوا من شيء</span><span class="big">'+(c.N?pc(c.negAny/c.N):'—')+'</span><span class="small">'+fmt(c.negAny)+' من '+fmt(c.N)+'</span></div>'+
@@ -1089,7 +1174,7 @@ function renderRecs(){
 
 /* ---------- evidence drawer ---------- */
 function itemCard(it){
- const asp=it.intent==='planning'?chip('سؤال: '+(TOPIC[it.topic]||{label:''}).label):it.intent==='official'?chip('رسمي / إعلاني','warn'):it.aspects.map(x=>chip((ASPECTS[x.a]?ASPECTS[x.a].label:x.a)+' · '+(x.p==='neg'?'سلبي':x.p==='pos'?'إيجابي':x.p==='mix'?'مختلط':'ذكر'),x.p==='neg'?'bad':x.p==='pos'?'ok':'mut')).join('');
+ const asp=it.intent==='planning'?chip('سؤال: '+(TOPIC[it.topic]||{label:''}).label):it.intent==='official'?chip('رسمي / إعلاني','warn'):it.aspects.map(x=>chip((ASPECTS[x.a]?ASPECTS[x.a].label:x.a)+' · '+(x.p==='neg'?'سلبي':x.p==='pos'?'إيجابي':x.p==='mix'?'مختلط':'ذكر'),x.p==='neg'?'bad':x.p==='pos'?'ok':'mut')+(x.p==='neg'&&ASPECTS[x.a]?' <button class="fixb" type="button" data-act="fixCls" data-id="'+esc(it.id)+'" data-a="'+x.a+'" title="لا تحسبوا هذا الرأي شكوى من '+esc(ASPECTS[x.a].label)+'">التصنيف خطأ</button>':'')).join('');
  const link=/^https?:\/\//.test(it.url||'')?'<a href="'+esc(it.url)+'" target="_blank" rel="noopener noreferrer">فتح الرابط</a>':(it.demo?'<span>رابط تجريبي</span>':'');
  return '<div class="ev"><div class="row">'+chip(it.season)+(it.stars?chip(it.stars+' من 5','mut'):'')+(it.platform?chip(PLAT[it.platform]||'','mut'):'')+(it.day?chip('اليوم '+it.day,'mut'):chip(it.publishedAt?'خارج أيام الموسم':'بلا تاريخ نشر','mut'))+chip(areaName(it.area),'mut')+asp+(it.uncertain?chip('غير محسوم','warn'):'')+(it.demo?chip('تجريبي','warn'):'')+'</div>'+
   '<div class="tx'+(isEn(it.text)?' en':'')+'">'+esc(it.text)+'</div>'+
@@ -1101,7 +1186,7 @@ function renderDrawer(){
  const src=D.all?P.items:V.items,srt=(p,q)=>(q.likes-p.likes)||(q.publishedAt||'').localeCompare(p.publishedAt||'');
  const g=src.filter(i=>i.query==='general'&&D.fn(i)).sort(srt),t=src.filter(i=>i.query==='targeted'&&D.fn(i)).sort(srt);
  dr.innerHTML='<div class="dh"><div><h3>'+esc(D.title)+'</h3><div class="small">'+fmt(g.length)+' مادة'+(t.length?' + '+fmt(t.length)+' أمثلة إضافية':'')+' · '+esc(D.all?'كل المواسم':V.ui.season)+'</div></div><button class="btn sm" type="button" data-act="closeEv">إغلاق</button></div>'+
-  '<div class="db">'+(g.length?g.slice(0,D.g).map(itemCard).join('')+(g.length>D.g?'<button class="btn sm" type="button" data-act="moreEv" data-w="g">عرض المزيد</button>':''):'<div class="empty">لا مواد في هذا النطاق.</div>')+
+  '<div class="db">'+(FIXES.length?'<div class="note warn">'+(FIXES.length===1?'صحّحتم تصنيفًا واحدًا':'صحّحتم '+fmt(FIXES.length)+' تصنيفات')+'، والأرقام والتوصيات أُعيد حسابها. <button class="btn sm" type="button" data-act="unfixCls">تراجع عن آخر تصحيح</button></div>':'')+(g.length?g.slice(0,D.g).map(itemCard).join('')+(g.length>D.g?'<button class="btn sm" type="button" data-act="moreEv" data-w="g">عرض المزيد</button>':''):'<div class="empty">لا مواد في هذا النطاق.</div>')+
   (t.length?'<h4>أمثلة إضافية (بحث موجّه)</h4><div class="note">هذه الأمثلة تشرح الأسباب ولا تدخل في حساب النسب، لأن البحث الموجّه يضخّم الموضوع الذي نبحث عنه.</div>'+t.slice(0,D.t).map(itemCard).join('')+(t.length>D.t?'<button class="btn sm" type="button" data-act="moreEv" data-w="t">عرض المزيد</button>':''):'')+'</div>';
  dr.classList.add('on');$('scrim').classList.add('on');
 }
@@ -1678,6 +1763,22 @@ function wire(){
  document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if($('pv').classList.contains('on')){closePreview();return}if(D){D=null;renderDrawer()}});
 }
 
+/* ---------- voice field + classification corrections ---------- */
+ACT.vfAsp=t=>vfSelect(t.dataset.a);
+ACT.vfDot=t=>{const id=t.dataset.id,it=P.byId[id];if(!it)return;D={title:opinion(it)?'رأي زائر':'مادة لا تُحسب رأيًا',fn:i=>i.id===id,g:1,t:0};renderDrawer()};
+ACT.fixCls=t=>{
+ const id=t.dataset.id,a=t.dataset.a,it=P.byId[id];if(!it)return;
+ FIXES.push({id,prev:S.overrides[id]?clone(S.overrides[id]):null});
+ S.overrides[id]=it.aspects.filter(x=>x.a!==a).map(x=>({a:x.a,p:x.p}));
+ persist();processAll();renderAll();
+ toast('صحّحنا التصنيف: هذا الرأي لم يعد يُحسب شكوى من «'+ASPECTS[a].label+'».');
+};
+ACT.unfixCls=()=>{
+ const f=FIXES.pop();if(!f)return;
+ if(f.prev)S.overrides[f.id]=f.prev;else delete S.overrides[f.id];
+ persist();processAll();renderAll();toast('تراجعنا عن آخر تصحيح.');
+};
+
 
 /* ================= chat assistant: matches the request to the same analysis (rules, not a language model) ================= */
 const DIG={'٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9'};
@@ -1841,7 +1942,7 @@ function worstAnswer(){
  if(!iss.length)return {h:weakNote()+'<div>ما فيه جانب تكررت الشكوى منه بما يكفي في هذا النطاق.</div>',acts:[],steps:[stepsScope(),stepsData()]};
  const h=weakNote()+'<div><b>أكثر ما أزعج الزوار:</b></div><ul>'+iss.slice(0,3).map(o=>'<li>'+esc(ASPECTS[o.a].label)+': '+txC(o.n,c.N)+esc(flagShort(sigOf(o.a)))+'</li>').join('')+'</ul>';
  const a=iss[0].a;
- return {h,acts:[A('أمثلة من الزوار','ev',{id:cev(ASPECTS[a].label+': ما أزعج الزوار',i=>vis(i)&&i.aspects.some(z=>z.a===a&&z.p==='neg')),pri:true}),A('كل التوصيات','go',{v:'recs'})],steps:[stepsScope(),stepsData(),'رتّبت الجوانب حسب حصة الشكاوى']};
+ return {h,acts:[A('أمثلة من الزوار','ev',{id:cev(ASPECTS[a].label+': ما أزعج الزوار',i=>vis(i)&&i.aspects.some(z=>z.a===a&&z.p==='neg')),pri:true}),A('كل التوصيات','go',{v:'recs'})],steps:[stepsScope(),stepsData(),'رتّبت الجوانب حسب حصة الشكاوى'],after:()=>vfSelect(a)};
 }
 function evidenceAnswer(asp){
  const iss=issues(),a=asp[0]||(iss[0]&&iss[0].a);
@@ -1951,7 +2052,28 @@ function updateAnswer(){
  return {h:'<div>ما عندنا اتصال مباشر بأي منصة (هذا ضمن «قريبًا»)، فالتحديث يتم بإضافة بيانات جديدة: ارفعوا ملفًا جديدًا واختاروا منصته، أو ألصقوا تعليقات. ما يتكرر لا يُحسب مرتين، وبعدها نعرض لكم «الجديد منذ آخر تحليل».</div>',acts:[A('البيانات','go',{v:'data',pri:true})],steps:[]};
 }
 
+function firstStepAnswer(){
+ const iss=issues(),c=V.cur,m=mode();
+ if(!iss.length)return worstAnswer();
+ const top=iss[0],tied=iss.filter(o=>o.n===top.n),recs=ranked(m),rec=recs[0];
+ const labs=tied.map(o=>'«'+ASPECTS[o.a].label+'»').join(' و');
+ let h=weakNote()+'<div><b>أكبر مشكلة:</b> '+(tied.length>1?labs+' متعادلة، '+txC(top.n,c.N)+' لكل منها.':labs+'، '+txC(top.n,c.N)+' من الآراء.')+'</div>';
+ const acts=[];
+ if(rec){
+  h+='<div class="note"><b>أول شيء تسوونه'+(tied.length>1||rec.a!==top.a?' (لـ«'+esc(ASPECTS[rec.a].label)+'»)':'')+':</b> '+esc(planOf(rec,m))+'<div class="small">'+esc(rec.team)+' · الهدف '+pn(rec.kpi.base)+' ← '+pn(rec.kpi.target)+' · '+esc(whenTxt(rec,m))+'</div></div>';
+  h+='<div class="small">'+(m==='live'?'رتّبت التوصيات حسب الأولوية ثم سهولة التنفيذ الآن.':'رتّبت التوصيات حسب قوة الدليل وحجم الأثر.')+' النقاط المضيئة في الحقل هي الآراء اللي بُنيت عليها.</div>';
+  acts.push(A('اسمع الأصوات','ev',{id:cev(ASPECTS[rec.a].label+': ما أزعج الزوار',i=>vis(i)&&i.aspects.some(z=>z.a===rec.a&&z.p==='neg')),pri:true}));
+  acts.push(A('أضيفوها إلى الخطة','save',{key:rec.key}));
+ }else h+='<div class="small">ما فيه توصية بعد: التوصية تحتاج 5 شكاوى على الأقل من 3 مصادر مستقلة.</div>';
+ acts.push(A('اعرضوا الحقل','go',{v:'happened'}));
+ const a=rec?rec.a:top.a;
+ return {h:h+demoNote(),acts,steps:[stepsScope(),stepsData(),'رتّبت الشكاوى حسب عددها','اخترت أول إجراء من التوصيات'],after:()=>{if(typeof vfSelect==='function')vfSelect(a)}};
+}
 /* ---------- router ---------- */
+/* "what didn't they like" must reach complaints before the praise rule sees "عجب/حب" */
+const DISLIKEQ=/ما عجب|ما اعجب|ما حب|ما انبسط|مو عاجب|didn'?t like|disliked/;
+const SUGGEST=['وش أكثر ما أزعج الزوار؟','وش أعجب الزوار؟','وش أهم توصية؟','قارن بين المنصات'];
+const suggestBtns=()=>'<div class="chips" style="margin-top:8px">'+SUGGEST.map(q=>'<button class="chipb" type="button" data-act="chip" data-q="'+esc(q)+'">'+esc(q)+'</button>').join('')+'</div>';
 function route(t,ent){
  chatLast=t;
  const has=r=>r.test(t);
@@ -1972,6 +2094,7 @@ function route(t,ent){
  applyEnt(ent);
  const asp=ent.aspects;
  const REC=/توصي|اقتراح|اقترح|وش اسوي|ايش اسوي|ايش نسوي|وش نسوي|وش القرار|قرار|اجراء|ماذا نفعل|recommend|what should/;
+ if(!asp.length&&has(/مشكله|مشاكل|شكو|شكاوي|شتك|ازعج|اسوا|problem|complain/)&&has(/اسوي|نسوي|اول شي|اول خطوه|اجراء|افعل|اعمل|what should|first/))return firstStepAnswer();
  if(!asp.length&&!has(REC)&&(ent.plat||has(/منصه|منصات|سوشال|سوشل|كلمات مفتاحيه|كي ?ورد|keyword/)))return platformsAnswer(ent.plat);
  if(!asp.length&&has(/مشاعر|sentiment|محايد|نسبه الايجابي|نسبه السلبي|ايجابي وسلبي|سلبي وايجابي|توزيع الاراء|كم.*(?:ايجابي|سلبي)/))return sentimentAnswer();
  if(!asp.length&&has(/مواضيع|موضوع|topics|اكثر ما يذكر|اكثر ذكرا|الاكثر ذكرا|الاكثر تكرارا|وش يتكلمون|ايش يتكلمون|يتكلمون عن/))return topicsAnswer();
@@ -1981,14 +2104,15 @@ function route(t,ent){
  if(has(/فرص|فرصه|فكره|افكار|محتوي|opportunit|content idea/))return oppsAnswer();
  if(has(/دليل|ادله|اثبات|مقتطف|تعليقات|وش يقولون|ايش يقولون|شو يقولون|وش قالوا|امثله|evidence|quotes/))return evidenceAnswer(asp);
  if(has(/مراحل|مرحله|رحله|stage|journey/)&&!asp.length)return stagesAnswer();
- if(has(/نقاط القوه|احسن|افضل|ايجابي|مميز|يعجب|اعجب|strength|best/)&&!asp.length)return strengthsAnswer();
- if(has(/اسوا|اكبر مشكله|اهم مشكله|تحديات|شكاوي|مشاكل|مشكله|عوائق|ازعج|نقاط الالم|معاناه|pain|worst|problems|issues/)&&!asp.length)return worstAnswer();
+ if(has(DISLIKEQ)&&!asp.length)return worstAnswer();
+ if(has(/نقاط القوه|احسن|افضل|ايجابي|مميز|يعجب|اعجب|عجبهم|عجبه|عجبني|حبوا|حبو|يحبون|انبسط|استمتع|مدح|اشاد|strength|best|liked|loved|enjoy/)&&!asp.length)return strengthsAnswer();
+ if(has(/اسوا|اكبر مشكله|اهم مشكله|تحديات|شكاوي|شكوي|شتك|تذمر|تضايق|زعل|سلبيات|عيوب|مشاكل|مشكله|عوائق|ازعج|نقاط الالم|معاناه|pain|worst|problems|issues|complain/)&&!asp.length)return worstAnswer();
  if(asp.length){const bs=asp.slice(0,2).map(aspectBlock);return {h:weakNote()+bs.map(b=>b.h).join('<hr class="cl">')+demoNote(),acts:bs.flatMap(b=>b.acts).slice(0,5),steps:[stepsScope(),stepsData()].concat(bs[0].steps)}}
  if(ent.area)return areaAnswer(ent.area);
  if(has(/قارن|مقارنه|مقابل|السابق|الماضي|compare|vs/))return compareAnswer();
  if(has(/وش تغير|ايش تغير|شو تغير|تغير|الجديد|هذا الاسبوع|هالاسبوع|ملخص|وضع|وش صار|what changed|summary|overview/))return summaryAnswer();
  if(has(/موسم|فتره|يوم|ايام/)&&(ent.season||ent.period))return summaryAnswer();
- return {h:'ما فهمت طلبكم بدقة. أقدر أجاوب عن جانب (الانتظار، الزحام، الأسعار، الأكل…) أو منطقة أو موسم، وأعطيكم تقريرًا أو توصيات، وأقول لكم متوسط النجوم. جرّبوا أحد الاقتراحات تحت.',acts:[],steps:[]};
+ return {h:'<div>ما فهمت طلبكم بدقة. أقدر أجاوب عن جانب (الانتظار، الزحام، الأسعار، الأكل…) أو منطقة أو موسم، وأعطيكم تقريرًا أو توصيات، وأقول لكم متوسط النجوم. هل تقصدون أحد هذه الأسئلة؟</div>'+suggestBtns(),acts:[],steps:[]};
 }
 
 /* ---------- chat window ---------- */
